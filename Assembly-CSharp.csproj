@@ -45,10 +45,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Scripts\File Management\Spritesheet.cs" />
      <Compile Include="Assets\Scripts\Game Logic\EntityManager.cs" />
      <Compile Include="Assets\Scripts\Game Logic\GameController.cs" />
      <Compile Include="Assets\Scripts\Game Logic\MapManager.cs" />
      <Compile Include="Assets\Scripts\Game Logic\PlayerController.cs" />
+     <Compile Include="Assets\Scripts\Objects\MapTile.cs" />
      <None Include="Assets\Graphics\README.txt" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
