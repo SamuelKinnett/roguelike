@@ -1,13 +1,26 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+public enum directions
+{
+    north,
+    east,
+    south,
+    west
+}
+
+
 public class EntityManager : MonoBehaviour {
+
 
 	public GameObject obj_MapManager;
 	public GameObject obj_Player;
 
 	private MapManager mapManager;
 	private PlayerController playerController;
+
+    int playerX;
+    int playerY;
 
 	// Use this for initialization
 	void Start () {
@@ -23,6 +36,8 @@ public class EntityManager : MonoBehaviour {
 	// Place the player at the specicified position and generate enemies
 	void Initialise(int playerX, int playerY) {
 
+        this.playerX = playerX;
+        this.playerY = playerY;
 	}
 
 	/// <summary>
@@ -47,8 +62,57 @@ public class EntityManager : MonoBehaviour {
 	/// </summary>
 	/// <returns><c>true</c>, if player was moved, <c>false</c> otherwise.</returns>
 	/// <param name="direction">Direction.</param>
-	bool MovePlayer(int direction) {
+	bool MovePlayer(directions direction) {
+        TileInfo targetTile;
 
+        switch(direction)
+        {
+            case directions.north:
+                targetTile = mapManager.GetTile(playerX, playerY + 1);
+                if (targetTile.solid)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+                break;
+            case directions.east:
+                targetTile = mapManager.GetTile(playerX + 1, playerY);
+                if (targetTile.solid)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+                break;
+            case directions.south:
+                targetTile = mapManager.GetTile(playerX, playerY - 1);
+                if(targetTile.solid)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+                break;
+            case directions.west:
+                targetTile = mapManager.GetTile(playerX - 1, playerY);
+                if (targetTile.solid)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+                break;
+                
+        }
 	}
 
 	/// <summary>
