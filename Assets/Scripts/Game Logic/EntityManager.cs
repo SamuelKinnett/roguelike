@@ -62,7 +62,7 @@ public class EntityManager : MonoBehaviour {
 	/// </summary>
 	/// <returns><c>true</c>, if player was moved, <c>false</c> otherwise.</returns>
 	/// <param name="direction">Direction.</param>
-	bool MovePlayer(directions direction) {
+	public bool MovePlayer(directions direction) {
         TileInfo targetTile;
 
         switch(direction)
@@ -118,7 +118,8 @@ public class EntityManager : MonoBehaviour {
 	/// <summary>
 	/// Returns true if the player is on the stairs (descending)
 	/// </summary>
-	bool OnStairs() {
+	public bool OnStairs() {
+  
 
 	}
 }
