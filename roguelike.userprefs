@@ -1,10 +1,9 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Game Logic\MapManager.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Objects/MapTile.cs">
     <Files>
-      <File FileName="Assets\Scripts\Game Logic\MapManager.cs" Line="215" Column="23" />
-      <File FileName="Assets\Scripts\File Management\Spritesheet.cs" Line="16" Column="2" />
-      <File FileName="Assets\Scripts\Objects\MapTile.cs" Line="77" Column="3" />
+      <File FileName="Assets/Scripts/Game Logic/MapManager.cs" Line="34" Column="19" />
+      <File FileName="Assets/Scripts/Objects/MapTile.cs" Line="95" Column="2" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

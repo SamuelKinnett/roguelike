@@ -9,20 +9,31 @@ public class MapManager : MonoBehaviour
 	//This 2D array contains all of the map tiles
 	List<MapTile> emptyTiles;
 	//A list of all non-collideable (i.e. empty) tiles
-	int mapWidth, mapHeight;
+	public int mapWidth, mapHeight;
 	bool emptyListUpdateNeeded;
 	//Do we need to populate the list of empty tiles?
+
+	//TESTING
+	public Sprite testingSprite;
+	bool wew = false;
 
 	// Use this for initialization
 	void Start ()
 	{
 		emptyListUpdateNeeded = true;
+		map = new MapTile[mapWidth, mapHeight];
+
+		//TESTING
+		//GenerateMap ();
 	}
-	
+
 	// Update is called once per frame
 	void Update ()
 	{
-	
+		if (wew == false) {
+			GenerateMap ();
+			wew = true;
+		}
 	}
 
 	/// <summary>
@@ -156,7 +167,7 @@ public class MapManager : MonoBehaviour
 				collisionMap = children [0].PlaceRooms (desiredDepth, collisionMap);
 				collisionMap = children [1].PlaceRooms (desiredDepth, collisionMap);
 				//After this, link the two with a corridor.
-				collisionMap = JoinRooms (children [0], children [1], collisionMap);
+				//collisionMap = JoinRooms (children [0], children [1], collisionMap);
 			}
 
 			return collisionMap;
@@ -177,6 +188,10 @@ public class MapManager : MonoBehaviour
 
 				int topRoomY, bottomRoomY;
 				bool spaceFound = false;
+
+				//Assign values to topRoomY and bottomRoomY to shut up the compiler
+				topRoomY = -1;
+				bottomRoomY = -1;
 
 				//We'll need to start by finding the y value of the two edges. Look from
 				//top to bottom so that we know the first space encountered will be the
@@ -212,12 +227,56 @@ public class MapManager : MonoBehaviour
 				//Now we can calculate the midpoint
 				int midpointY = (int)((bottomRoomY + topRoomY) / 2);
 
-				//Next, decide on 
+				//Next, decide on a point along the bottom of the top area, and the top of the bottom area
+				// as end points of the corridor.
+
+				//Rather than choosing from all positions randomly, then checking if they're inside the room,
+				// we'll first populate two lists which we can randomly select from.
+				List<int> possibleTopX = new List<int>();
+				List<int> possibleBottomX = new List<int>();
+
+				for (int tempX = room1.x; tempX < room1.width - 1; ++tempX) {
+					if (collisionMap [tempX, bottomRoomY] == 1)
+						possibleBottomX.Add (tempX);
+				}
+
+				for (int tempX = room2.x; tempX < room2.width - 1; ++tempX) {
+					if (collisionMap [tempX, topRoomY] == 1)
+						possibleTopX.Add (tempX);
+				}
+
+				//TODO: add code here to check if a straight corridor is possible and, if it is, place it
+				// instead of an 's' shaped corridor.
+
+				int endPointTopX, endPointBottomX;
+				Debug.Log (possibleTopX.Count);
+				endPointTopX = possibleTopX[(int)((possibleTopX.Count - 1) * rand.NextDouble ())];
+				endPointBottomX = possibleBottomX[(int)((possibleBottomX.Count - 1) * rand.NextDouble ())];
+
+				//Place the corridor
+				for (int tempY = topRoomY; tempY > midpointY; --tempY) {
+					collisionMap [endPointTopX, tempY] = 1;
+				}
+
+				if (endPointTopX < endPointBottomX) {
+					for (int tempX = endPointTopX; tempX < endPointBottomX; ++tempX) {
+						collisionMap [tempX, midpointY] = 1;
+					}
+				} else {
+					for (int tempX = endPointTopX; tempX > endPointBottomX; --tempX) {
+						collisionMap [tempX, midpointY] = 1;
+					}
+				}
+
+				for (int tempY = bottomRoomY; tempY < midpointY; ++tempY) {
+					collisionMap [endPointBottomX, tempY] = 1;
+				}
 
 			} else {
 				//The rooms have been split vertically, so we need a horizontal line.
 
 			}
+		return collisionMap;
 		}
 	}
 
@@ -233,7 +292,7 @@ public class MapManager : MonoBehaviour
 		mapGenerator.Split (3);	//This will split the map 3 times
 
 		//Now, generate the collision map
-		mapGenerator.PlaceRooms (3, collisionMap);
+		collisionMap = mapGenerator.PlaceRooms (3, collisionMap);
 
 		//TODO: add code here to place doors and subsequently:
 		//	-distinguish between rooms and corridors
@@ -244,6 +303,16 @@ public class MapManager : MonoBehaviour
 		int[] stairPosition = new int[2];
 		stairPosition [0] = 0;
 		stairPosition [1] = 0;
+
+		for (int tempX = 0; tempX < mapWidth; ++tempX) {
+			for (int tempY = 0; tempY < mapHeight; ++tempY) {
+				if (collisionMap [tempX, tempY] == 1) {
+					Debug.Log ("Here's a tile!");
+					map [tempX, tempY] = new MapTile ();
+					map [tempX, tempY].CreateTile (tempX, tempY, false, false, false, testingSprite);
+				}
+			}
+		}
 
 		emptyListUpdateNeeded = true;	//Now that we've generated the map, it'll need an update to the empty list
 

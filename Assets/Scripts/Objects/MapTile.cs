@@ -18,7 +18,7 @@ public struct TileInfo
 	public TileVisibility visibility;
 }
 
-public class MapTile : MonoBehaviour
+public class MapTile : ScriptableObject
 {
 	TileInfo info;
 	Sprite sprite;
@@ -90,9 +90,11 @@ public class MapTile : MonoBehaviour
 		Vector3 tilePosition = worldTile.transform.position;
 		tilePosition.x = x * worldTile.GetComponent<SpriteRenderer> ().bounds.size.x;
 		tilePosition.y = y * worldTile.GetComponent<SpriteRenderer> ().bounds.size.y;
+
+		worldTile.transform.position = tilePosition;
 	
 		//Set the spriterenderer to initially make the tile invisible (unseen)
-		worldTile.GetComponent<SpriteRenderer> ().enabled = false;
+		//worldTile.GetComponent<SpriteRenderer> ().enabled = false;
 	}
 
 	public void SetCollision (bool solid)
