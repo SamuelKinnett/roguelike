@@ -90,7 +90,6 @@ public class MapManager : MonoBehaviour
 		//The x and y co-ordinates refer to the bottom left corner of the region.
 		int x, y, width, height, depth;
 		MapNode[] children;
-		System.Random rand;
 
 		public MapNode (int x, int y, int width, int height, int depth)
 		{
@@ -99,8 +98,6 @@ public class MapManager : MonoBehaviour
 			this.width = width;
 			this.height = height;
 			this.depth = depth;
-
-			rand = new System.Random ();
 		}
 
 		/// <summary>
@@ -118,22 +115,23 @@ public class MapManager : MonoBehaviour
 			children = new MapNode[2];
 
 			//The split percentage should be between 40% and 60% of the parent node
-			splitAmount = 0.2f * rand.NextDouble () + 0.4f;
+			splitAmount = 0.2f * Random.value + 0.4f;
 
-			//alternate between horizontal and vertical splits on each layer
-			if (depth % 2 == 1) {
+			//randomly choose an axis to split accross
+			int axis = (int)(100 * Random.value);
+			if (axis % 2 == 1) {
 				//split horizontally
 				int splitLocation = (int)(height * splitAmount);
-				children [0] = new MapNode (x, y, width, height - splitLocation, depth + 1);
+				children [0] = new MapNode (x, y, width, splitLocation, depth + 1);
 				children [0].Split (desiredDepth);
-				children [1] = new MapNode (x, y + splitLocation, width, splitLocation, depth + 1);
+				children [1] = new MapNode (x, y + splitLocation, width, height - splitLocation, depth + 1);
 				children [1].Split (desiredDepth);
 			} else {
 				//split vertically
 				int splitLocation = (int)(width * splitAmount);
-				children [0] = new MapNode (x, y, width - splitLocation, height, depth + 1);
+				children [0] = new MapNode (x, y, splitLocation, height, depth + 1);
 				children [0].Split (desiredDepth);
-				children [1] = new MapNode (x + splitLocation, y, splitLocation, height, depth + 1);
+				children [1] = new MapNode (x + splitLocation, y, width - splitLocation, height, depth + 1);
 				children [1].Split (desiredDepth);
 			}
 		}
@@ -141,36 +139,41 @@ public class MapManager : MonoBehaviour
 		/// <summary>
 		/// Places rooms randomly at the specified depth and connects them with
 		/// corridors.
-		/// Returns a 2D array containing the collision map of the dungeon
+		/// Returns a list of the squares that need to be set as empty in the collision map.
 		/// </summary>
-		public int[,] PlaceRooms (int desiredDepth, int[,] collisionMap)
+		public List<int[]> PlaceRooms (int desiredDepth)
 		{
-			if (depth == desiredDepth) {
+			List<int[]> roomTiles = new List<int[]>();
 
-				System.Random rand = new System.Random ();
+			if (depth == desiredDepth) {
 
 				//Decide on the position of the room and then the dimensions
 				//Place the origin of the room somewhere within the lower left corner
 				//of the region.
-				int roomX = (int)((width / 2) * rand.NextDouble ());
-				int roomY = (int)((height / 2) * rand.NextDouble ());
-				int roomWidth = (int)(((width - roomX) / 4) * rand.NextDouble () + ((width - roomX) / 2));
-				int roomHeight = (int)(((height - roomY) / 4) * rand.NextDouble () + ((height - roomY) / 2));
+				int roomX = (int)(((width / 2) * Random.value) + x);
+				int roomY = (int)(((height / 2) * Random.value) + y);
 
-				for (int tempX = roomX; tempX < roomWidth; ++tempX) {
-					for (int tempY = roomY; tempY < roomHeight; ++tempY) {
-						collisionMap [tempX, tempY] = 1;	//Make this area not solid.
+				int newMaxWidth = width - (roomX - x);
+				int newMaxHeight = height - (roomY - y);
+
+				int roomWidth = (int)((newMaxWidth - 3) * Random.value + 3);
+				int roomHeight = (int)((newMaxHeight - 3) * Random.value + 3);
+
+				for (int tempX = roomX; tempX < roomX + roomWidth; ++tempX) {
+					for (int tempY = roomY; tempY < roomY + roomHeight; ++tempY) {
+						roomTiles.Add (new int[] { tempX, tempY });	//Add the square to the list of room tiles
+						//collisionMap [tempX, tempY] = 1;	//Make this area not solid.
 					}
 				}
 			} else {
 				//Call the function recursively
-				collisionMap = children [0].PlaceRooms (desiredDepth, collisionMap);
-				collisionMap = children [1].PlaceRooms (desiredDepth, collisionMap);
+				roomTiles.AddRange(children [0].PlaceRooms (desiredDepth));
+				roomTiles.AddRange(children [1].PlaceRooms (desiredDepth));
 				//After this, link the two with a corridor.
 				//collisionMap = JoinRooms (children [0], children [1], collisionMap);
 			}
 
-			return collisionMap;
+			return roomTiles;
 		}
 
 		/// <summary>
@@ -250,8 +253,8 @@ public class MapManager : MonoBehaviour
 
 				int endPointTopX, endPointBottomX;
 				Debug.Log (possibleTopX.Count);
-				endPointTopX = possibleTopX[(int)((possibleTopX.Count - 1) * rand.NextDouble ())];
-				endPointBottomX = possibleBottomX[(int)((possibleBottomX.Count - 1) * rand.NextDouble ())];
+				endPointTopX = possibleTopX[(int)((possibleTopX.Count - 1) * Random.value)];
+				endPointBottomX = possibleBottomX[(int)((possibleBottomX.Count - 1) * Random.value)];
 
 				//Place the corridor
 				for (int tempY = topRoomY; tempY > midpointY; --tempY) {
@@ -287,12 +290,17 @@ public class MapManager : MonoBehaviour
 	public int[] GenerateMap ()
 	{
 		int[,] collisionMap = new int[mapWidth, mapHeight];
+		List<int[]> roomTiles;
 
 		MapNode mapGenerator = new MapNode (0, 0, mapWidth, mapHeight, 0);
 		mapGenerator.Split (3);	//This will split the map 3 times
 
 		//Now, generate the collision map
-		collisionMap = mapGenerator.PlaceRooms (3, collisionMap);
+		roomTiles = mapGenerator.PlaceRooms (3);
+
+		for (int currentTile = 0; currentTile < roomTiles.Count; ++currentTile) {
+			collisionMap[roomTiles[currentTile][0], roomTiles[currentTile][1]] = 1;
+		}
 
 		//TODO: add code here to place doors and subsequently:
 		//	-distinguish between rooms and corridors
