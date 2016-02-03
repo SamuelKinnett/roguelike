@@ -27,7 +27,7 @@ public class GameController : MonoBehaviour
 		//Game logic goes here
 
 		if (newMapNeeded) {
-			mapManager.GenerateMap (paletteName);
+			mapManager.GenerateMap ();
 			newMapNeeded = false;
 		}
 
