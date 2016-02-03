@@ -85,6 +85,8 @@ public class MapManager : MonoBehaviour
 
 		//The x and y co-ordinates refer to the bottom left corner of the region.
 		int x, y, width, height, depth;
+		int splitType;
+		//0 = horizontal, 1 = vertical
 		MapNode[] children;
 
 		public MapNode (int x, int y, int width, int height, int depth)
@@ -117,6 +119,7 @@ public class MapManager : MonoBehaviour
 			int axis = (int)(100 * Random.value);
 			if (axis % 2 == 1) {
 				//split horizontally
+				splitType = 0;
 				int splitLocation = (int)(height * splitAmount);
 				children [0] = new MapNode (x, y, width, splitLocation, depth + 1);
 				children [0].Split (desiredDepth);
@@ -124,6 +127,7 @@ public class MapManager : MonoBehaviour
 				children [1].Split (desiredDepth);
 			} else {
 				//split vertically
+				splitType = 1;
 				int splitLocation = (int)(width * splitAmount);
 				children [0] = new MapNode (x, y, splitLocation, height, depth + 1);
 				children [0].Split (desiredDepth);
@@ -172,7 +176,7 @@ public class MapManager : MonoBehaviour
 				tempCollisionMap = children [0].PlaceRooms (desiredDepth, tempCollisionMap, maxRoomWidth, maxRoomHeight);
 				tempCollisionMap = children [1].PlaceRooms (desiredDepth, tempCollisionMap, maxRoomWidth, maxRoomHeight);
 				//After this, link the two with a corridor.
-				//tempCollisionMap = JoinRooms (children [0], children [1], collisionMap);
+				tempCollisionMap = JoinRooms (children [0], children [1], tempCollisionMap);
 			}
 
 			return tempCollisionMap;
@@ -185,7 +189,7 @@ public class MapManager : MonoBehaviour
 		/// </summary>
 		int[,] JoinRooms (MapNode room1, MapNode room2, int[,] collisionMap)
 		{
-			if (room1.depth % 2 == 1) {
+			if (splitType == 0) {
 				//The rooms have been split horizontally, so we need a vertical line.
 
 				//Firstly, find a line halfway between the edges of the two rooms
@@ -201,8 +205,8 @@ public class MapManager : MonoBehaviour
 				//We'll need to start by finding the y value of the two edges. Look from
 				//top to bottom so that we know the first space encountered will be the
 				//"highest" empty point in the lower area.
-				for (int tempX = room1.x; tempX < room1.width; ++tempX) {
-					for (int tempY = room1.height - 1; tempY >= room1.y; --tempY) {
+				for (int tempY = room1.y + room1.height - 1; tempY >= room1.y; --tempY) {
+					for (int tempX = room1.x; tempX < room1.x + room1.width; ++tempX) {
 						if (collisionMap [tempX, tempY] == 1) {
 							//We've found empty space
 							bottomRoomY = tempY;
@@ -216,8 +220,8 @@ public class MapManager : MonoBehaviour
 
 				//Now, calculate the "lowest" y value of the top area
 				spaceFound = false;
-				for (int tempX = room2.x; tempX < room2.width; ++tempX) {
-					for (int tempY = room2.y; tempY < room2.height; ++tempY) {
+				for (int tempY = room2.y; tempY < room2.y + room2.height; ++tempY) {
+					for (int tempX = room2.x; tempX < room2.x + room2.width; ++tempX) {
 						if (collisionMap [tempX, tempY] == 1) {
 							//We've found empty space
 							topRoomY = tempY;
@@ -237,51 +241,92 @@ public class MapManager : MonoBehaviour
 
 				//Rather than choosing from all positions randomly, then checking if they're inside the room,
 				// we'll first populate two lists which we can randomly select from.
-				List<int> possibleTopX = new List<int>();
-				List<int> possibleBottomX = new List<int>();
+				List<int> possibleTopX = new List<int> ();
+				List<int> possibleBottomX = new List<int> ();
 
-				for (int tempX = room1.x; tempX < room1.width - 1; ++tempX) {
-					if (collisionMap [tempX, bottomRoomY] == 1)
+				for (int tempX = room1.x; tempX < room1.x + room1.width; ++tempX) {
+					if (collisionMap [tempX, bottomRoomY] == 1) {
 						possibleBottomX.Add (tempX);
+					}
 				}
-
-				for (int tempX = room2.x; tempX < room2.width - 1; ++tempX) {
-					if (collisionMap [tempX, topRoomY] == 1)
+					
+				for (int tempX = room2.x; tempX < room2.x + room2.width; ++tempX) {
+					if (collisionMap [tempX, topRoomY] == 1) {
 						possibleTopX.Add (tempX);
+					}
 				}
 
 				//TODO: add code here to check if a straight corridor is possible and, if it is, place it
 				// instead of an 's' shaped corridor.
 
 				int endPointTopX, endPointBottomX;
-				Debug.Log (possibleTopX.Count);
-				endPointTopX = possibleTopX[(int)((possibleTopX.Count - 1) * Random.value)];
-				endPointBottomX = possibleBottomX[(int)((possibleBottomX.Count - 1) * Random.value)];
+				endPointTopX = possibleTopX [(int)((possibleTopX.Count - 1) * Random.value)];
+				endPointBottomX = possibleBottomX [(int)((possibleBottomX.Count - 1) * Random.value)];
 
 				//Place the corridor
-				for (int tempY = topRoomY; tempY > midpointY; --tempY) {
+				for (int tempY = topRoomY; tempY >= midpointY; --tempY) {
 					collisionMap [endPointTopX, tempY] = 1;
 				}
 
 				if (endPointTopX < endPointBottomX) {
-					for (int tempX = endPointTopX; tempX < endPointBottomX; ++tempX) {
+					for (int tempX = endPointTopX; tempX <= endPointBottomX; ++tempX) {
 						collisionMap [tempX, midpointY] = 1;
 					}
 				} else {
-					for (int tempX = endPointTopX; tempX > endPointBottomX; --tempX) {
+					for (int tempX = endPointTopX; tempX >= endPointBottomX; --tempX) {
 						collisionMap [tempX, midpointY] = 1;
 					}
 				}
 
-				for (int tempY = bottomRoomY; tempY < midpointY; ++tempY) {
+				for (int tempY = bottomRoomY; tempY <= midpointY; ++tempY) {
 					collisionMap [endPointBottomX, tempY] = 1;
 				}
 
 			} else {
 				//The rooms have been split vertically, so we need a horizontal line.
 
+				//Firstly, find a line halfway between the edges of the two rooms
+				//well, near-as-damnit anyway.
+
+				int rightRoomX, leftRoomX;
+				bool spaceFound = false;
+
+				//Assign values to rightRoomX and leftRoomX to shut up the compiler
+				rightRoomX = -1;
+				leftRoomX = -1;
+
+				//We'll need to start by finding the x value of the two edges. Look from
+				//right to left so that we know the first space encountered will be the
+				//rightmost empty point in the left area.
+				for (int tempX = room1.x + room1.width - 1; tempX > room1.x; --tempX) {
+					for (int tempY = room1.y; tempY < room1.height; ++tempY) {
+						if (collisionMap [tempX, tempY] == 1) {
+							//We've found empty space
+							leftRoomX = tempX;
+							spaceFound = true;
+							break;
+						}
+					}
+					if (spaceFound)
+						break;
+				}
+
+				//Now, calculate the leftmost x value of the right area
+				spaceFound = false;
+				for (int tempX = room2.x; tempX < room2.x + room2.width; ++tempX) {
+					for (int tempY = room2.y; tempY < room2.y + room2.height; ++tempY) {
+						if (collisionMap [tempX, tempY] == 1) {
+							//We've found empty space
+							rightRoomX = tempX;
+							spaceFound = true;
+							break;
+						}
+					}
+					if (spaceFound)
+						break;
+				}
 			}
-		return collisionMap;
+			return collisionMap;
 		}
 	}
 
@@ -289,9 +334,13 @@ public class MapManager : MonoBehaviour
 	/// Called to pseudo-randomly generate a map.
 	/// Returns the co-ordinates of the starting stairs
 	/// </summary>
-	public int[] GenerateMap ()
+	public int[] GenerateMap (string paletteName)
 	{
 		int[,] collisionMap = new int[mapWidth, mapHeight];
+
+		//Load tile palette;
+		GameObject paletteObject = (GameObject)Resources.Load ("Palettes/" + paletteName);
+		MapPalette palette = paletteObject.GetComponent<MapPalette> ();
 
 		MapNode mapGenerator = new MapNode (0, 0, mapWidth, mapHeight, 0);
 		mapGenerator.Split (4);	//This will split the map 4 times

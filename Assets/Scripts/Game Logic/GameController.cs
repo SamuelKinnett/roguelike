@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class GameController : MonoBehaviour {
+public class GameController : MonoBehaviour
+{
 
 	public GameObject obj_MapManager;
 	public GameObject obj_EntityManager;
+	public string paletteName;
 
 	private MapManager mapManager;
 	private EntityManager entityManager;
@@ -12,18 +14,20 @@ public class GameController : MonoBehaviour {
 	bool newMapNeeded;
 
 	// Use this for initialization
-	void Start () {
+	void Start ()
+	{
 		mapManager = obj_MapManager.GetComponent<MapManager> ();
 		entityManager = obj_EntityManager.GetComponent<EntityManager> ();
 		newMapNeeded = true;
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void Update ()
+	{
 		//Game logic goes here
 
 		if (newMapNeeded) {
-			mapManager.GenerateMap ();
+			mapManager.GenerateMap (paletteName);
 			newMapNeeded = false;
 		}
 
