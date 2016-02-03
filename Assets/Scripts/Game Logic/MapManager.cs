@@ -10,6 +10,8 @@ public class MapManager : MonoBehaviour
 	List<MapTile> emptyTiles;
 	//A list of all non-collideable (i.e. empty) tiles
 	public int mapWidth, mapHeight;
+	public int maxRoomWidth, maxRoomHeight;
+
 	bool emptyListUpdateNeeded;
 	//Do we need to populate the list of empty tiles?
 
@@ -22,18 +24,12 @@ public class MapManager : MonoBehaviour
 	{
 		emptyListUpdateNeeded = true;
 		map = new MapTile[mapWidth, mapHeight];
-
-		//TESTING
-		//GenerateMap ();
 	}
 
 	// Update is called once per frame
 	void Update ()
 	{
-		if (wew == false) {
-			GenerateMap ();
-			wew = true;
-		}
+		
 	}
 
 	/// <summary>
@@ -139,11 +135,11 @@ public class MapManager : MonoBehaviour
 		/// <summary>
 		/// Places rooms randomly at the specified depth and connects them with
 		/// corridors.
-		/// Returns a list of the squares that need to be set as empty in the collision map.
+		/// Returns a the updated collision map
 		/// </summary>
-		public List<int[]> PlaceRooms (int desiredDepth)
+		public int[,] PlaceRooms (int desiredDepth, int[,] collisionMap, int maxRoomWidth, int maxRoomHeight)
 		{
-			List<int[]> roomTiles = new List<int[]>();
+			int[,] tempCollisionMap = collisionMap;
 
 			if (depth == desiredDepth) {
 
@@ -159,21 +155,27 @@ public class MapManager : MonoBehaviour
 				int roomWidth = (int)((newMaxWidth - 3) * Random.value + 3);
 				int roomHeight = (int)((newMaxHeight - 3) * Random.value + 3);
 
+				//Clamp the width and height values
+				if (roomWidth > maxRoomWidth)
+					roomWidth = maxRoomWidth;
+
+				if (roomHeight > maxRoomHeight)
+					roomHeight = maxRoomHeight;
+
 				for (int tempX = roomX; tempX < roomX + roomWidth; ++tempX) {
 					for (int tempY = roomY; tempY < roomY + roomHeight; ++tempY) {
-						roomTiles.Add (new int[] { tempX, tempY });	//Add the square to the list of room tiles
-						//collisionMap [tempX, tempY] = 1;	//Make this area not solid.
+						tempCollisionMap [tempX, tempY] = 1;	//Make this area not solid.
 					}
 				}
 			} else {
 				//Call the function recursively
-				roomTiles.AddRange(children [0].PlaceRooms (desiredDepth));
-				roomTiles.AddRange(children [1].PlaceRooms (desiredDepth));
+				tempCollisionMap = children [0].PlaceRooms (desiredDepth, tempCollisionMap, maxRoomWidth, maxRoomHeight);
+				tempCollisionMap = children [1].PlaceRooms (desiredDepth, tempCollisionMap, maxRoomWidth, maxRoomHeight);
 				//After this, link the two with a corridor.
-				//collisionMap = JoinRooms (children [0], children [1], collisionMap);
+				//tempCollisionMap = JoinRooms (children [0], children [1], collisionMap);
 			}
 
-			return roomTiles;
+			return tempCollisionMap;
 		}
 
 		/// <summary>
@@ -290,17 +292,12 @@ public class MapManager : MonoBehaviour
 	public int[] GenerateMap ()
 	{
 		int[,] collisionMap = new int[mapWidth, mapHeight];
-		List<int[]> roomTiles;
 
 		MapNode mapGenerator = new MapNode (0, 0, mapWidth, mapHeight, 0);
-		mapGenerator.Split (3);	//This will split the map 3 times
+		mapGenerator.Split (4);	//This will split the map 4 times
 
 		//Now, generate the collision map
-		roomTiles = mapGenerator.PlaceRooms (3);
-
-		for (int currentTile = 0; currentTile < roomTiles.Count; ++currentTile) {
-			collisionMap[roomTiles[currentTile][0], roomTiles[currentTile][1]] = 1;
-		}
+		collisionMap = mapGenerator.PlaceRooms (4, collisionMap, maxRoomWidth, maxRoomHeight);
 
 		//TODO: add code here to place doors and subsequently:
 		//	-distinguish between rooms and corridors
