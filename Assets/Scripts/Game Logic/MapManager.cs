@@ -9,6 +9,8 @@ public class MapManager : MonoBehaviour
 	//This 2D array contains all of the map tiles
 	List<MapTile> emptyTiles;
 	//A list of all non-collideable (i.e. empty) tiles
+	int[] stairPositions;
+	//Contains the x and y of the up stairs, then the x and y of the down stairs
 	public int mapWidth, mapHeight;
 	public int maxRoomWidth, maxRoomHeight;
 	public string paletteName;
@@ -18,6 +20,8 @@ public class MapManager : MonoBehaviour
 
 	//TESTING
 	public Sprite testingSprite;
+	public Sprite upStair;
+	public Sprite downStair;
 	bool wew = false;
 
 	// Use this for initialization
@@ -412,21 +416,20 @@ public class MapManager : MonoBehaviour
 		//Now, generate the collision map
 		collisionMap = mapGenerator.PlaceRooms (4, collisionMap, maxRoomWidth, maxRoomHeight);
 
-		//TODO: add code here to place doors and subsequently:
-		//	-distinguish between rooms and corridors
-		//	-set the maptiles to represent the map
-		//	-place stairs
+		//TODO: add code here to place doors and subsequently
+		// distinguish between rooms and corridors
 
-		//for now, return a placeholder
-		int[] stairPosition = new int[2];
-		stairPosition [0] = 0;
-		stairPosition [1] = 0;
+		stairPositions = PlaceStairs (collisionMap);
 
 		CreateTiles (collisionMap);
 
 		emptyListUpdateNeeded = true;	//Now that we've generated the map, it'll need an update to the empty list
 
-		return stairPosition;
+		int[] upStairsPosition = new int[2];
+		upStairsPosition [0] = stairPositions [0];
+		upStairsPosition [1] = stairPositions [1];
+
+		return upStairsPosition;
 	}
 
 	/// <summary>
@@ -446,169 +449,179 @@ public class MapManager : MonoBehaviour
 		//Place the floor tiles
 		for (int tempX = 0; tempX < mapWidth; ++tempX) {
 			for (int tempY = 0; tempY < mapHeight; ++tempY) {
-				if (collisionMap [tempX, tempY] == 1) {
-					//using bits as flags, work out the index of the sprite for the tile
-					int surroundingTiles = 0;
-
-					if (tempX > 0)
-					if (collisionMap [tempX - 1, tempY] == 0)
-						surroundingTiles = surroundingTiles | 1;
-
-					if (tempY < mapHeight - 1)
-					if (collisionMap [tempX, tempY + 1] == 0)
-						surroundingTiles = surroundingTiles | 2;
-
-					if (tempX < mapWidth - 1)
-					if (collisionMap [tempX + 1, tempY] == 0)
-						surroundingTiles = surroundingTiles | 4;
-
-					if (tempY > 0)
-					if (collisionMap [tempX, tempY - 1] == 0)
-						surroundingTiles = surroundingTiles | 8;
-
-					switch (surroundingTiles) {
-					case 0:
-						//No surrounding walls
-						tileSprite = palette.floorTiles [(int)FloorPalette.Centre];
-						break;
-					case 1:
-						//Wall to the left
-						tileSprite = palette.floorTiles [(int)FloorPalette.Left];
-						break;
-					case 2:
-						//Wall to the top
-						tileSprite = palette.floorTiles [(int)FloorPalette.Top];
-						break;
-					case 3:
-						//Walls to the left and top
-						tileSprite = palette.floorTiles [(int)FloorPalette.TopLeft];
-						break;
-					case 4:
-						//Wall to the right
-						tileSprite = palette.floorTiles [(int)FloorPalette.Right];
-						break;
-					case 5:
-						//Walls to the left and right
-						tileSprite = palette.floorTiles [(int)FloorPalette.Vertical];
-						break;
-					case 6:
-						//Walls to the top and right
-						tileSprite = palette.floorTiles [(int)FloorPalette.TopRight];
-						break;
-					case 7:
-						//Walls to the top, left and right
-						tileSprite = palette.floorTiles [(int)FloorPalette.EndPieceTop];
-						break;
-					case 8:
-						//Wall to the bottom
-						tileSprite = palette.floorTiles [(int)FloorPalette.Bottom];
-						break;
-					case 9:
-						//Walls to the bottom and left
-						tileSprite = palette.floorTiles [(int)FloorPalette.BottomLeft];
-						break;
-					case 10:
-						//Walls to the bottom and top
-						tileSprite = palette.floorTiles [(int)FloorPalette.Horizontal];
-						break;
-					case 11:
-						//Walls to the top, left and bottom
-						tileSprite = palette.floorTiles [(int)FloorPalette.EndPieceLeft];
-						break;
-					case 12:
-						//Walls to the right and bottom
-						tileSprite = palette.floorTiles [(int)FloorPalette.BottomRight];
-						break;
-					case 13:
-						//Walls to the right, left and bottom
-						tileSprite = palette.floorTiles [(int)FloorPalette.EndPieceBottom];
-						break;
-					case 14:
-						//Walls to the top, right and bottom
-						tileSprite = palette.floorTiles [(int)FloorPalette.EndPieceRight];
-						break;
-					case 15:
-						//Walls on all sides
-						tileSprite = palette.floorTiles [(int)FloorPalette.FullyEnclosed];
-						break;
-
-					}
-					
-					//Debug.Log ("Here's a tile!");
+				if (tempX == stairPositions [0] &&
+				    tempY == stairPositions [1]) {
+					//This tile is the upwards staircase
 					map [tempX, tempY] = new MapTile ();
-					map [tempX, tempY].CreateTile (tempX, tempY, false, false, false, tileSprite);
+					map [tempX, tempY].CreateTile (tempX, tempY, false, true, false, upStair);
+				} else if (tempX == stairPositions [2] &&
+				           tempY == stairPositions [3]) {
+					//This tile is the downwards staircase
+					map [tempX, tempY] = new MapTile ();
+					map [tempX, tempY].CreateTile (tempX, tempY, false, false, true, downStair);
 				} else {
-					if (tempX == 0) {
-						if (tempY == 0) {
-							//Bottom left
-							if (collisionMap [tempX, tempY + 1] == 1
+					if (collisionMap [tempX, tempY] == 1) {
+						//using bits as flags, work out the index of the sprite for the tile
+						int surroundingTiles = 0;
+
+						if (tempX > 0)
+						if (collisionMap [tempX - 1, tempY] == 0)
+							surroundingTiles = surroundingTiles | 1;
+
+						if (tempY < mapHeight - 1)
+						if (collisionMap [tempX, tempY + 1] == 0)
+							surroundingTiles = surroundingTiles | 2;
+
+						if (tempX < mapWidth - 1)
+						if (collisionMap [tempX + 1, tempY] == 0)
+							surroundingTiles = surroundingTiles | 4;
+
+						if (tempY > 0)
+						if (collisionMap [tempX, tempY - 1] == 0)
+							surroundingTiles = surroundingTiles | 8;
+
+						switch (surroundingTiles) {
+						case 0:
+						//No surrounding walls
+							tileSprite = palette.floorTiles [(int)FloorPalette.Centre];
+							break;
+						case 1:
+						//Wall to the left
+							tileSprite = palette.floorTiles [(int)FloorPalette.Left];
+							break;
+						case 2:
+						//Wall to the top
+							tileSprite = palette.floorTiles [(int)FloorPalette.Top];
+							break;
+						case 3:
+						//Walls to the left and top
+							tileSprite = palette.floorTiles [(int)FloorPalette.TopLeft];
+							break;
+						case 4:
+						//Wall to the right
+							tileSprite = palette.floorTiles [(int)FloorPalette.Right];
+							break;
+						case 5:
+						//Walls to the left and right
+							tileSprite = palette.floorTiles [(int)FloorPalette.Vertical];
+							break;
+						case 6:
+						//Walls to the top and right
+							tileSprite = palette.floorTiles [(int)FloorPalette.TopRight];
+							break;
+						case 7:
+						//Walls to the top, left and right
+							tileSprite = palette.floorTiles [(int)FloorPalette.EndPieceTop];
+							break;
+						case 8:
+						//Wall to the bottom
+							tileSprite = palette.floorTiles [(int)FloorPalette.Bottom];
+							break;
+						case 9:
+						//Walls to the bottom and left
+							tileSprite = palette.floorTiles [(int)FloorPalette.BottomLeft];
+							break;
+						case 10:
+						//Walls to the bottom and top
+							tileSprite = palette.floorTiles [(int)FloorPalette.Horizontal];
+							break;
+						case 11:
+						//Walls to the top, left and bottom
+							tileSprite = palette.floorTiles [(int)FloorPalette.EndPieceLeft];
+							break;
+						case 12:
+						//Walls to the right and bottom
+							tileSprite = palette.floorTiles [(int)FloorPalette.BottomRight];
+							break;
+						case 13:
+						//Walls to the right, left and bottom
+							tileSprite = palette.floorTiles [(int)FloorPalette.EndPieceBottom];
+							break;
+						case 14:
+						//Walls to the top, right and bottom
+							tileSprite = palette.floorTiles [(int)FloorPalette.EndPieceRight];
+							break;
+						case 15:
+						//Walls on all sides
+							tileSprite = palette.floorTiles [(int)FloorPalette.FullyEnclosed];
+							break;
+						}	
+						//Debug.Log ("Here's a tile!");
+						map [tempX, tempY] = new MapTile ();
+						map [tempX, tempY].CreateTile (tempX, tempY, false, false, false, tileSprite);
+					} else {
+						if (tempX == 0) {
+							if (tempY == 0) {
+								//Bottom left
+								if (collisionMap [tempX, tempY + 1] == 1
+								    || collisionMap [tempX + 1, tempY] == 1
+								    || collisionMap [tempX + 1, tempY + 1] == 1)
+									wallMap [tempX, tempY] = 1;
+							} else if (tempY == mapHeight - 1) {
+								//Top left
+								if (collisionMap [tempX + 1, tempY] == 1
+								    || collisionMap [tempX, tempY - 1] == 1
+								    || collisionMap [tempX + 1, tempY - 1] == 1)
+									wallMap [tempX, tempY] = 1;
+							} else {
+								//Anywhere along the left edge
+								if (collisionMap [tempX, tempY + 1] == 1
+								    || collisionMap [tempX + 1, tempY] == 1
+								    || collisionMap [tempX, tempY - 1] == 1
+								    || collisionMap [tempX + 1, tempY - 1] == 1
+								    || collisionMap [tempX + 1, tempY + 1] == 1)
+									wallMap [tempX, tempY] = 1;
+							}
+						} else if (tempX == mapWidth - 1) {
+							if (tempY == 0) {
+								//Bottom right
+								if (collisionMap [tempX - 1, tempY] == 1
+								    || collisionMap [tempX, tempY + 1] == 1
+								    || collisionMap [tempX - 1, tempY + 1] == 1)
+									wallMap [tempX, tempY] = 1;
+							} else if (tempY == mapHeight - 1) {
+								//Top right
+								if (collisionMap [tempX - 1, tempY] == 1
+								    || collisionMap [tempX, tempY - 1] == 1
+								    || collisionMap [tempX - 1, tempY - 1] == 1)
+									wallMap [tempX, tempY] = 1;
+							} else {
+								//Anywhere along the right edge
+								if (collisionMap [tempX - 1, tempY] == 1
+								    || collisionMap [tempX, tempY + 1] == 1
+								    || collisionMap [tempX, tempY - 1] == 1
+								    || collisionMap [tempX - 1, tempY - 1] == 1
+								    || collisionMap [tempX - 1, tempY + 1] == 1)
+									wallMap [tempX, tempY] = 1;
+							}
+						} else if (tempY == 0) {
+							//Anywhere along the bottom edge
+							if (collisionMap [tempX - 1, tempY] == 1
+							    || collisionMap [tempX, tempY + 1] == 1
 							    || collisionMap [tempX + 1, tempY] == 1
+							    || collisionMap [tempX - 1, tempY + 1] == 1
 							    || collisionMap [tempX + 1, tempY + 1] == 1)
 								wallMap [tempX, tempY] = 1;
 						} else if (tempY == mapHeight - 1) {
-							//Top left
-							if (collisionMap [tempX + 1, tempY] == 1
+							//Anywhere along the top edge
+							if (collisionMap [tempX - 1, tempY] == 1
+							    || collisionMap [tempX + 1, tempY] == 1
 							    || collisionMap [tempX, tempY - 1] == 1
+							    || collisionMap [tempX - 1, tempY - 1] == 1
 							    || collisionMap [tempX + 1, tempY - 1] == 1)
 								wallMap [tempX, tempY] = 1;
 						} else {
-							//Anywhere along the left edge
-							if (collisionMap [tempX, tempY + 1] == 1
+							//Anywhere else!
+							if (collisionMap [tempX - 1, tempY] == 1
+							    || collisionMap [tempX, tempY + 1] == 1
 							    || collisionMap [tempX + 1, tempY] == 1
 							    || collisionMap [tempX, tempY - 1] == 1
+							    || collisionMap [tempX - 1, tempY - 1] == 1
+							    || collisionMap [tempX - 1, tempY + 1] == 1
 							    || collisionMap [tempX + 1, tempY - 1] == 1
 							    || collisionMap [tempX + 1, tempY + 1] == 1)
 								wallMap [tempX, tempY] = 1;
 						}
-					} else if (tempX == mapWidth - 1) {
-						if (tempY == 0) {
-							//Bottom right
-							if (collisionMap [tempX - 1, tempY] == 1
-							    || collisionMap [tempX, tempY + 1] == 1
-							    || collisionMap [tempX - 1, tempY + 1] == 1)
-								wallMap [tempX, tempY] = 1;
-						} else if (tempY == mapHeight - 1) {
-							//Top right
-							if (collisionMap [tempX - 1, tempY] == 1
-							    || collisionMap [tempX, tempY - 1] == 1
-							    || collisionMap [tempX - 1, tempY - 1] == 1)
-								wallMap [tempX, tempY] = 1;
-						} else {
-							//Anywhere along the right edge
-							if (collisionMap [tempX - 1, tempY] == 1
-							    || collisionMap [tempX, tempY + 1] == 1
-							    || collisionMap [tempX, tempY - 1] == 1
-							    || collisionMap [tempX - 1, tempY - 1] == 1
-							    || collisionMap [tempX - 1, tempY + 1] == 1)
-								wallMap [tempX, tempY] = 1;
-						}
-					} else if (tempY == 0) {
-						//Anywhere along the bottom edge
-						if (collisionMap [tempX - 1, tempY] == 1
-						    || collisionMap [tempX, tempY + 1] == 1
-						    || collisionMap [tempX + 1, tempY] == 1
-						    || collisionMap [tempX - 1, tempY + 1] == 1
-						    || collisionMap [tempX + 1, tempY + 1] == 1)
-							wallMap [tempX, tempY] = 1;
-					} else if (tempY == mapHeight - 1) {
-						//Anywhere along the top edge
-						if (collisionMap [tempX - 1, tempY] == 1
-						    || collisionMap [tempX + 1, tempY] == 1
-						    || collisionMap [tempX, tempY - 1] == 1
-						    || collisionMap [tempX - 1, tempY - 1] == 1
-						    || collisionMap [tempX + 1, tempY - 1] == 1)
-							wallMap [tempX, tempY] = 1;
-					} else {
-						//Anywhere else!
-						if (collisionMap [tempX - 1, tempY] == 1
-						    || collisionMap [tempX, tempY + 1] == 1
-						    || collisionMap [tempX + 1, tempY] == 1
-						    || collisionMap [tempX, tempY - 1] == 1
-						    || collisionMap [tempX - 1, tempY - 1] == 1
-						    || collisionMap [tempX - 1, tempY + 1] == 1
-						    || collisionMap [tempX + 1, tempY - 1] == 1
-						    || collisionMap [tempX + 1, tempY + 1] == 1)
-							wallMap [tempX, tempY] = 1;
 					}
 				}
 			}
@@ -711,6 +724,74 @@ public class MapManager : MonoBehaviour
 			}
 		}
 
+	}
+
+	/// <summary>
+	/// Places the up and down stairs.
+	/// Returns the x and y co-ordinates of the stairs (i.e. the entry point)
+	/// </summary>
+	int[] PlaceStairs (int[,] collisionMap)
+	{
+		List<int> stair1X = new List<int> ();
+		List<int> stair2X = new List<int> ();
+		int stair1Y = -1;
+		int stair2Y = -1;
+		int[] stairCoords = new int[4];
+
+		//Starting from the edges of the screen, move inwards until we find
+		// y-co-ords with suitable spots for the stairs. Then, place the
+		// stairs at random points along these 'lines'
+		bool stairSpot1Found = false;
+		for (int tempX = 1; tempX < mapWidth / 2; ++tempX) {
+			for (int tempY = 1; tempY < mapHeight - 1; ++tempY) {
+				if (collisionMap [tempX, tempY] == 1) {
+					if (collisionMap [tempX + 1, tempY] == 1
+					    && collisionMap [tempX - 1, tempY] == 1
+					    && collisionMap [tempX, tempY + 1] == 1
+					    && collisionMap [tempX, tempY - 1] == 1) {
+						stair1Y = tempY;
+						stair1X.Add (tempX);
+						stairSpot1Found = true;
+					}
+				}
+			}
+			if (stairSpot1Found)
+				break;
+		}
+
+		bool stairSpot2Found = false;
+		for (int tempX = mapWidth - 2; tempX > mapWidth / 2; --tempX) {
+			for (int tempY = 1; tempY < mapHeight - 1; ++tempY) {
+				if (collisionMap [tempX, tempY] == 1) {
+					if (collisionMap [tempX + 1, tempY] == 1
+					    && collisionMap [tempX - 1, tempY] == 1
+					    && collisionMap [tempX, tempY + 1] == 1
+					    && collisionMap [tempX, tempY - 1] == 1) {
+						stair2Y = tempY;
+						stair2X.Add (tempX);
+						stairSpot2Found = true;
+					}
+				}
+			}
+			if (stairSpot2Found)
+				break;
+		}
+
+		if (Random.value > 0.5f) {
+			stairCoords [0] = stair1X [(int)((stair1X.Count - 1) * Random.value)];
+			stairCoords [1] = stair1Y;
+			stairCoords [2] = stair2X [(int)((stair2X.Count - 1) * Random.value)];
+			stairCoords [3] = stair2Y;
+		} else {
+			stairCoords [0] = stair2X [(int)((stair2X.Count - 1) * Random.value)];
+			stairCoords [1] = stair2Y;
+			stairCoords [2] = stair1X [(int)((stair1X.Count - 1) * Random.value)];
+			stairCoords [3] = stair1Y;
+		}
+
+		Debug.Log (stairCoords [0] + ", " + stairCoords [1] +
+		"\n" + stairCoords [2] + ", " + stairCoords [3]);
+		return stairCoords;
 	}
 
 	#endregion
