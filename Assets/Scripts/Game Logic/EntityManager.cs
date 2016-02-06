@@ -106,7 +106,7 @@ public class EntityManager : MonoBehaviour
 	/// <summary>
 	/// Returns true if the player is on the stairs (descending)
 	/// </summary>
-	public bool OnStairs ()
+	public bool OnDownStairs ()
 	{
 		TileInfo targetTile;
 		targetTile = mapManager.GetTile (playerX, playerY);
@@ -116,4 +116,21 @@ public class EntityManager : MonoBehaviour
 			return false;
 		}
 	}
+
+    /// <summary>
+	/// Returns true if the player is on the stairs (acsending)
+	/// </summary>
+    public bool OnUpStairs()
+    {
+        TileInfo targetTile;
+        targetTile = mapManager.GetTile(playerX, playerY);
+        if (targetTile.stairsUp)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 }
