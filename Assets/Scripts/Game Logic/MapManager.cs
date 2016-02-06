@@ -719,7 +719,7 @@ public class MapManager : MonoBehaviour
 
 					//Debug.Log ("Here's a tile!");
 					map [tempX, tempY] = new MapTile ();
-					map [tempX, tempY].CreateTile (tempX, tempY, false, false, false, tileSprite);
+					map [tempX, tempY].CreateTile (tempX, tempY, true, false, false, tileSprite);
 				}
 			}
 		}
