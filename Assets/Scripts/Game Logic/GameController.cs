@@ -5,8 +5,7 @@ public class GameController : MonoBehaviour {
 
 	public GameObject obj_MapManager;
 	public GameObject obj_EntityManager;
-    public int        direction;
-    
+ 
 
     private MapManager mapManager;
 	private EntityManager entityManager;
@@ -19,23 +18,32 @@ public class GameController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        //Game logic goes here
+        //Game logic is here
         bool input = true;
+        int direction = -1;
         //GetInput
         while (input == true)
         {
-            if (Input.GetKey("up")) { direction = 0; }  //change keys later so user can bind
+            //TODO: Change so user can bind keys
+            if      (Input.GetKey("up"))    { direction = 0; }  
             else if (Input.GetKey("right")) { direction = 1; }
-            else if (Input.GetKey("down")) { direction = 2; }
-            else if (Input.GetKey("left")) { direction = 3; }
+            else if (Input.GetKey("down"))  { direction = 2; }
+            else if (Input.GetKey("left"))  { direction = 3; }
 
-            //check the player can move
-            if (EntityManager.MovePlayer(direction) == true)
+            //ensure that only valid keys have been pushed
+            if (direction != -1)
             {
-                input = false;
-                if (EntityManager.OnStairs() == true)
+                //check the player can move into the position on the map
+                if (EntityManager.MovePlayer(direction) == true)
                 {
-                    MapManager.GenerateMap();
+                    //player has moved - no more user input wanted
+                    input = false;
+                    //check if player is on stairs
+                    if (EntityManager.OnStairs() == true)
+                    {
+                        //player goes up or down stairs
+                        MapManager.GenerateMap();
+                    }
                 }
             }
         }
