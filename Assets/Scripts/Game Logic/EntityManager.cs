@@ -48,7 +48,7 @@ public class EntityManager : MonoBehaviour {
 	/// <returns><c>true</c>, if player was moved, <c>false</c> otherwise.</returns>
 	/// <param name="direction">Direction.</param>
 	bool MovePlayer(int direction) {
-
+       
 	}
 
 	/// <summary>
