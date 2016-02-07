@@ -14,6 +14,7 @@ public class MapManager : MonoBehaviour
 	public int mapWidth, mapHeight;
 	public int maxRoomWidth, maxRoomHeight;
 	public string paletteName;
+	public int viewRange;
 
 	bool emptyListUpdateNeeded;
 	//Do we need to populate the list of empty tiles?
@@ -22,6 +23,7 @@ public class MapManager : MonoBehaviour
 	public Sprite testingSprite;
 	public Sprite upStair;
 	public Sprite downStair;
+	public int rayDivisor;
 	bool wew = false;
 
 	// Use this for initialization
@@ -80,17 +82,36 @@ public class MapManager : MonoBehaviour
 		}
 	}
 
-	void RecalculateFogOfWar (int playerX, int playerY)
+	public void RecalculateFogOfWar (int playerX, int playerY)
 	{
-		for (int angle = 0; angle < 360; angle += 4) {
-			int xDisplacement = Mathf.Cos (angle * Mathf.Deg2Rad);
-			int yDisplacement = Mathf.Sin (angle * Mathf.Deg2Rad);
-			int tempX = playerX;
-			int tempY = playerY;
-
-			while (!map [tempX, tempY].GetInfo ().solid) {
-
+		for (int x = 0; x < mapWidth; ++x) {
+			for (int y = 0; y < mapHeight; ++y) {
+				if (map [x, y] != null) {
+					if (GetTile (x, y).visibility == TileVisibility.visible) {
+						map [x, y].SetVisibility (TileVisibility.seen);
+					}
+				}
 			}
+		}
+		for (int angle = -180; angle < 180; angle += rayDivisor) {
+			float xDisplacement = Mathf.Cos (angle * Mathf.Deg2Rad);
+			float yDisplacement = Mathf.Sin (angle * Mathf.Deg2Rad);
+			float tempX = playerX;
+			float tempY = playerY;
+			int mapX = playerX;
+			int mapY = playerY;
+			int count = 0;
+
+			while (!map [mapX, mapY].GetInfo ().solid
+			       && count < viewRange) {
+				map [mapX, mapY].SetVisibility (TileVisibility.visible);
+				tempX += xDisplacement;
+				tempY += yDisplacement;
+				mapX = (int)Mathf.Round (tempX);
+				mapY = (int)Mathf.Round (tempY);
+				++count;
+			}
+			map [mapX, mapY].SetVisibility (TileVisibility.visible);
 		}
 	}
 

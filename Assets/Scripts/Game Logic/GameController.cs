@@ -15,6 +15,7 @@ public class GameController : MonoBehaviour
 
 	//flags used for the gameloop
 	bool playerMoved;
+	bool fogUpdated;
 	bool entitiesUpdated;
 	bool keyReleased;
 	string key;
@@ -28,7 +29,9 @@ public class GameController : MonoBehaviour
 		newMapNeeded = true;
 
 		playerMoved = false;
+		keyReleased = false;
 		entitiesUpdated = false;
+		fogUpdated = false;
 	}
 	
 	// Update is called once per frame
@@ -39,10 +42,12 @@ public class GameController : MonoBehaviour
 		if (newMapNeeded) {
 			int[] playerPos = mapManager.GenerateMap ();
 			entityManager.Initialise (playerPos [0], playerPos [1]);
+			mapManager.RecalculateFogOfWar (playerPos [0], playerPos [1]);
 			newMapNeeded = false;
 			playerMoved = false;
 			keyReleased = false;
 			entitiesUpdated = false;
+			fogUpdated = false;
 		}
 			
 
@@ -86,6 +91,10 @@ public class GameController : MonoBehaviour
 					}
 				}
 			}
+		} else if (!fogUpdated) {
+			int[] playerPosition = entityManager.GetPlayerPosition ();
+			mapManager.RecalculateFogOfWar (playerPosition [0], playerPosition [1]);
+			fogUpdated = true;
 		} else if (!keyReleased) {
 			//Prevents the issue of the user holding down the movement key.
 			//	in future, a better implementation should be used to allow for
@@ -101,6 +110,7 @@ public class GameController : MonoBehaviour
 			playerMoved = false;
 			keyReleased = false;
 			entitiesUpdated = false;
+			fogUpdated = false;
 		}
 	}
 }
