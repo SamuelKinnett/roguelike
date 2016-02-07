@@ -80,6 +80,20 @@ public class MapManager : MonoBehaviour
 		}
 	}
 
+	void RecalculateFogOfWar (int playerX, int playerY)
+	{
+		for (int angle = 0; angle < 360; angle += 4) {
+			int xDisplacement = Mathf.Cos (angle * Mathf.Deg2Rad);
+			int yDisplacement = Mathf.Sin (angle * Mathf.Deg2Rad);
+			int tempX = playerX;
+			int tempY = playerY;
+
+			while (!map [tempX, tempY].GetInfo ().solid) {
+
+			}
+		}
+	}
+
 	#region Map Generation
 
 	/// <summary>
