@@ -97,6 +97,11 @@ public class MapTile : ScriptableObject
 		//worldTile.GetComponent<SpriteRenderer> ().enabled = false;
 	}
 
+	public void DestroyTile ()
+	{
+		Destroy (worldTile);
+	}
+
 	public void SetCollision (bool solid)
 	{
 		info.solid = solid;

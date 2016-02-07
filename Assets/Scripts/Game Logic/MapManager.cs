@@ -409,6 +409,13 @@ public class MapManager : MonoBehaviour
 	public int[] GenerateMap ()
 	{
 		int[,] collisionMap = new int[mapWidth, mapHeight];
+		//Clear the current maptile gameobjects
+		for (int x = 0; x < mapWidth; ++x) {
+			for (int y = 0; y < mapHeight; ++y) {
+				if (map [x, y] != null)
+					map [x, y].DestroyTile ();
+			}
+		}
 
 		MapNode mapGenerator = new MapNode (0, 0, mapWidth, mapHeight, 0);
 		mapGenerator.Split (4);	//This will split the map 4 times

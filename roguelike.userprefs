@@ -1,10 +1,14 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Game Logic\MapManager.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Graphics\CameraController.cs">
     <Files>
-      <File FileName="Assets\Scripts\Game Logic\MapManager.cs" Line="721" Column="42" />
-      <File FileName="Assets\Scripts\Game Logic\GameController.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Game Logic\EntityManager.cs" Line="154" Column="19" />
+      <File FileName="Assets\Scripts\Game Logic\PlayerController.cs" Line="7" Column="39" />
+      <File FileName="Assets\Scripts\Game Logic\GameController.cs" Line="79" Column="25" />
       <File FileName="Assets\Scripts\Objects\MapPalette.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Game Logic\MapManager.cs" Line="414" Column="41" />
+      <File FileName="Assets\Scripts\Objects\MapTile.cs" Line="73" Column="14" />
+      <File FileName="Assets\Scripts\Graphics\CameraController.cs" Line="44" Column="43" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

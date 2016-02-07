@@ -50,6 +50,7 @@
      <Compile Include="Assets\Scripts\Game Logic\GameController.cs" />
      <Compile Include="Assets\Scripts\Game Logic\MapManager.cs" />
      <Compile Include="Assets\Scripts\Game Logic\PlayerController.cs" />
+     <Compile Include="Assets\Scripts\Graphics\CameraController.cs" />
      <Compile Include="Assets\Scripts\Objects\MapPalette.cs" />
      <Compile Include="Assets\Scripts\Objects\MapTile.cs" />
      <None Include="Assets\Graphics\README.txt" />

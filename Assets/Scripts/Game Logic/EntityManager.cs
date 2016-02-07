@@ -37,11 +37,11 @@ public class EntityManager : MonoBehaviour
 	}
 
 	// Place the player at the specicified position and generate enemies
-	void Initialise (int playerX, int playerY)
+	public void Initialise (int playerX, int playerY)
 	{
-
 		this.playerX = playerX;
 		this.playerY = playerY;
+		playerController.SetPosition (playerX, playerY);
 	}
 
 	/// <summary>
@@ -75,25 +75,34 @@ public class EntityManager : MonoBehaviour
 		switch (direction) {
 		case directions.north:
 			targetTile = mapManager.GetTile (playerX, playerY + 1);
-			if (targetTile.solid) {
+			if (!targetTile.solid) {
+				//The player can move
+				++playerY;
+				playerController.SetPosition (playerX, playerY);
 				return true;
 			}
 			break;
 		case directions.east:
 			targetTile = mapManager.GetTile (playerX + 1, playerY);
-			if (targetTile.solid) {
+			if (!targetTile.solid) {
+				++playerX;
+				playerController.SetPosition (playerX, playerY);
 				return true;
 			}
 			break;
 		case directions.south:
 			targetTile = mapManager.GetTile (playerX, playerY - 1);
-			if (targetTile.solid) {
+			if (!targetTile.solid) {
+				--playerY;
+				playerController.SetPosition (playerX, playerY);
 				return true;
 			}
 			break;
 		case directions.west:
 			targetTile = mapManager.GetTile (playerX - 1, playerY);
-			if (targetTile.solid) {
+			if (!targetTile.solid) {
+				--playerX;
+				playerController.SetPosition (playerX, playerY);
 				return true;
 			}
 			break;
@@ -117,20 +126,32 @@ public class EntityManager : MonoBehaviour
 		}
 	}
 
-    /// <summary>
+	/// <summary>
 	/// Returns true if the player is on the stairs (acsending)
 	/// </summary>
-    public bool OnUpStairs()
-    {
-        TileInfo targetTile;
-        targetTile = mapManager.GetTile(playerX, playerY);
-        if (targetTile.stairsUp)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
+	public bool OnUpStairs ()
+	{
+		TileInfo targetTile;
+		targetTile = mapManager.GetTile (playerX, playerY);
+		if (targetTile.stairsUp) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public void UpdateEntityPositions ()
+	{
+		//playerController.SetPosition (playerX, playerY);
+	}
+
+	public int[] GetPlayerPosition ()
+	{
+		int[] position = new int[2];
+		position [0] = playerX;
+		position [1] = playerY;
+
+		return position;
+	}
+
 }

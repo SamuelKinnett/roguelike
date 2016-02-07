@@ -13,12 +13,22 @@ public class GameController : MonoBehaviour
 
 	bool newMapNeeded;
 
+	//flags used for the gameloop
+	bool playerMoved;
+	bool entitiesUpdated;
+	bool keyReleased;
+	string key;
+	bool resetLoop;
+
 	// Use this for initialization
 	void Start ()
 	{
 		mapManager = obj_MapManager.GetComponent<MapManager> ();
 		entityManager = obj_EntityManager.GetComponent<EntityManager> ();
 		newMapNeeded = true;
+
+		playerMoved = false;
+		entitiesUpdated = false;
 	}
 	
 	// Update is called once per frame
@@ -27,16 +37,70 @@ public class GameController : MonoBehaviour
 		//Game logic goes here
 
 		if (newMapNeeded) {
-			mapManager.GenerateMap ();
+			int[] playerPos = mapManager.GenerateMap ();
+			entityManager.Initialise (playerPos [0], playerPos [1]);
 			newMapNeeded = false;
+			playerMoved = false;
+			keyReleased = false;
+			entitiesUpdated = false;
 		}
+			
 
 		//GetInput
-		//If the player can move
-		//	MovePlayer();
-		//	Check if the player is on stairs();
-		//		GenerateMap();
-		//		
-		//	UpdateEntities();
+		if (!playerMoved) {
+			
+			directions direction = directions.north;
+			bool moveKeyPressed = false;
+
+			//TODO: Change so user can bind keys
+			if (Input.GetKey ("up")) {
+				direction = directions.north;
+				key = "up";
+				moveKeyPressed = true;
+			} else if (Input.GetKey ("right")) {
+				direction = directions.east;
+				key = "right";
+				moveKeyPressed = true;
+			} else if (Input.GetKey ("down")) {
+				direction = directions.south;
+				key = "down";
+				moveKeyPressed = true;
+			} else if (Input.GetKey ("left")) {
+				direction = directions.west;
+				key = "left";
+				moveKeyPressed = true;
+			}
+
+			//ensure that only valid keys have been pushed
+			if (moveKeyPressed) {
+				//check the player can move into the position on the map
+				if (entityManager.MovePlayer (direction) == true) {
+					//player has moved - no more user input wanted
+					playerMoved = true;
+					//check if player is on stairs
+					if (entityManager.OnDownStairs ()) {
+						//make the player go to a new floor
+						int[] playerStartPosition = mapManager.GenerateMap ();
+						entityManager.Initialise (playerStartPosition [0],
+							playerStartPosition [1]);
+					}
+				}
+			}
+		} else if (!keyReleased) {
+			//Prevents the issue of the user holding down the movement key.
+			//	in future, a better implementation should be used to allow for
+			//	holding the key but preventing difficult movement.
+			if (Input.GetKeyUp (key))
+				keyReleased = true;
+		} else if (!entitiesUpdated) {
+			//	UpdateEntities();
+			entityManager.UpdateEntityPositions ();
+			entitiesUpdated = true;
+		} else {
+			//Reset the flags
+			playerMoved = false;
+			keyReleased = false;
+			entitiesUpdated = false;
+		}
 	}
 }
