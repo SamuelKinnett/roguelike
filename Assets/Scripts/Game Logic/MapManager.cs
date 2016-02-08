@@ -15,6 +15,10 @@ public class MapManager : MonoBehaviour
 	public int maxRoomWidth, maxRoomHeight;
 	public string paletteName;
 
+	public int viewRange;
+	public float viewFalloff;
+	public bool falloffEnabled;
+
 	bool emptyListUpdateNeeded;
 	//Do we need to populate the list of empty tiles?
 
@@ -22,6 +26,7 @@ public class MapManager : MonoBehaviour
 	public Sprite testingSprite;
 	public Sprite upStair;
 	public Sprite downStair;
+	public int rayDivisor;
 	bool wew = false;
 
 	// Use this for initialization
@@ -29,6 +34,13 @@ public class MapManager : MonoBehaviour
 	{
 		emptyListUpdateNeeded = true;
 		map = new MapTile[mapWidth, mapHeight];
+
+		//clamp the falloff value such that the "light level" of a tile
+		// never falls below 0.2f
+
+		if (viewFalloff * viewRange > 0.8f) {
+			viewFalloff = 0.8f / viewRange;
+		}
 	}
 
 	// Update is called once per frame
@@ -77,6 +89,45 @@ public class MapManager : MonoBehaviour
 				if (!map [x, y].GetInfo ().solid)
 					emptyTiles.Add (map [x, y]);
 			}
+		}
+	}
+
+	public void RecalculateFogOfWar (int playerX, int playerY)
+	{
+		for (int x = 0; x < mapWidth; ++x) {
+			for (int y = 0; y < mapHeight; ++y) {
+				if (map [x, y] != null) {
+					if (GetTile (x, y).visibility == TileVisibility.visible) {
+						map [x, y].SetVisibility (TileVisibility.seen);
+					}
+				}
+			}
+		}
+		for (int angle = -180; angle < 180; angle += rayDivisor) {
+			float xDisplacement = Mathf.Cos (angle * Mathf.Deg2Rad);
+			float yDisplacement = Mathf.Sin (angle * Mathf.Deg2Rad);
+			float tempX = playerX;
+			float tempY = playerY;
+			int mapX = playerX;
+			int mapY = playerY;
+			int count = 0;
+
+			while (!map [mapX, mapY].GetInfo ().solid
+			       && count < viewRange) {
+				if (falloffEnabled)
+					map [mapX, mapY].SetVisibility (TileVisibility.visible, (float)(1.0f - (viewFalloff * count)));
+				else
+					map [mapX, mapY].SetVisibility (TileVisibility.visible);
+				tempX += xDisplacement;
+				tempY += yDisplacement;
+				mapX = (int)Mathf.Round (tempX);
+				mapY = (int)Mathf.Round (tempY);
+				++count;
+			}
+			if (falloffEnabled)
+				map [mapX, mapY].SetVisibility (TileVisibility.visible, (float)(1.0f - (viewFalloff * count)));
+			else
+				map [mapX, mapY].SetVisibility (TileVisibility.visible);
 		}
 	}
 
@@ -409,6 +460,15 @@ public class MapManager : MonoBehaviour
 	public int[] GenerateMap ()
 	{
 		int[,] collisionMap = new int[mapWidth, mapHeight];
+		//Clear the current maptile gameobjects
+		for (int x = 0; x < mapWidth; ++x) {
+			for (int y = 0; y < mapHeight; ++y) {
+				if (map [x, y] != null) {
+					map [x, y].DestroyTile ();
+					Destroy (map [x, y]);
+				}
+			}
+		}
 
 		MapNode mapGenerator = new MapNode (0, 0, mapWidth, mapHeight, 0);
 		mapGenerator.Split (4);	//This will split the map 4 times

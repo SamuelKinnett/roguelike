@@ -31,30 +31,7 @@ public class MapTile : ScriptableObject
 
 	void Update ()
 	{
-		if (info.visibility != oldVisibility) {
-			switch (info.visibility) {
 
-			case TileVisibility.seen:
-				//The tile has previously been seen, but is now not visible,
-				//so tint it to be darker
-				worldTile.GetComponent<SpriteRenderer> ().color = Color.grey;
-				worldTile.GetComponent<SpriteRenderer> ().enabled = true;
-				break;
-			
-			case TileVisibility.unseen:
-				//For whatever reason, the tile is now unknown to the player.
-				//Make it invisible.
-				worldTile.GetComponent<SpriteRenderer> ().enabled = false;
-				break;
-
-			case TileVisibility.visible:
-				//The tile is currently visible, apply no tinting
-				worldTile.GetComponent<SpriteRenderer> ().color = Color.white;
-				worldTile.GetComponent<SpriteRenderer> ().enabled = true;
-				break;
-			}
-			oldVisibility = info.visibility;
-		}
 	}
 
 	public MapTile ()
@@ -94,7 +71,12 @@ public class MapTile : ScriptableObject
 		worldTile.transform.position = tilePosition;
 	
 		//Set the spriterenderer to initially make the tile invisible (unseen)
-		//worldTile.GetComponent<SpriteRenderer> ().enabled = false;
+		worldTile.GetComponent<SpriteRenderer> ().enabled = false;
+	}
+
+	public void DestroyTile ()
+	{
+		Destroy (worldTile);
 	}
 
 	public void SetCollision (bool solid)
@@ -112,9 +94,35 @@ public class MapTile : ScriptableObject
 		info.stairsDown = stairsDown;
 	}
 
-	public void SetVisibility (TileVisibility visibility)
+	public void SetVisibility (TileVisibility visibility, float intensity = 1.0f)
 	{
 		info.visibility = visibility;
+
+		if (info.visibility != oldVisibility) {
+			switch (info.visibility) {
+
+			case TileVisibility.seen:
+				//The tile has previously been seen, but is now not visible,
+				//so tint it to be darker
+				worldTile.GetComponent<SpriteRenderer> ().color = new Color (0.2f, 0.2f, 0.2f);
+				worldTile.GetComponent<SpriteRenderer> ().enabled = true;
+				break;
+
+			case TileVisibility.unseen:
+				//For whatever reason, the tile is now unknown to the player.
+				//Make it invisible.
+				worldTile.GetComponent<SpriteRenderer> ().enabled = false;
+				break;
+
+			case TileVisibility.visible:
+				//The tile is currently visible, apply tinting based on the intensity
+				// value.
+				worldTile.GetComponent<SpriteRenderer> ().color = new Color (intensity, intensity, intensity);
+				worldTile.GetComponent<SpriteRenderer> ().enabled = true;
+				break;
+			}
+			oldVisibility = info.visibility;
+		}
 	}
 
 	public TileInfo GetInfo ()
