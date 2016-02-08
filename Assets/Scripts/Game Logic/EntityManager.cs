@@ -153,5 +153,4 @@ public class EntityManager : MonoBehaviour
 
 		return position;
 	}
-
 }

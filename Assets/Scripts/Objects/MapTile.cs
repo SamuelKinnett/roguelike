@@ -94,7 +94,7 @@ public class MapTile : ScriptableObject
 		info.stairsDown = stairsDown;
 	}
 
-	public void SetVisibility (TileVisibility visibility)
+	public void SetVisibility (TileVisibility visibility, float intensity = 1.0f)
 	{
 		info.visibility = visibility;
 
@@ -104,7 +104,7 @@ public class MapTile : ScriptableObject
 			case TileVisibility.seen:
 				//The tile has previously been seen, but is now not visible,
 				//so tint it to be darker
-				worldTile.GetComponent<SpriteRenderer> ().color = Color.grey;
+				worldTile.GetComponent<SpriteRenderer> ().color = new Color (0.2f, 0.2f, 0.2f);
 				worldTile.GetComponent<SpriteRenderer> ().enabled = true;
 				break;
 
@@ -115,8 +115,9 @@ public class MapTile : ScriptableObject
 				break;
 
 			case TileVisibility.visible:
-				//The tile is currently visible, apply no tinting
-				worldTile.GetComponent<SpriteRenderer> ().color = Color.white;
+				//The tile is currently visible, apply tinting based on the intensity
+				// value.
+				worldTile.GetComponent<SpriteRenderer> ().color = new Color (intensity, intensity, intensity);
 				worldTile.GetComponent<SpriteRenderer> ().enabled = true;
 				break;
 			}

@@ -14,7 +14,10 @@ public class MapManager : MonoBehaviour
 	public int mapWidth, mapHeight;
 	public int maxRoomWidth, maxRoomHeight;
 	public string paletteName;
+
 	public int viewRange;
+	public float viewFalloff;
+	public bool falloffEnabled;
 
 	bool emptyListUpdateNeeded;
 	//Do we need to populate the list of empty tiles?
@@ -31,6 +34,13 @@ public class MapManager : MonoBehaviour
 	{
 		emptyListUpdateNeeded = true;
 		map = new MapTile[mapWidth, mapHeight];
+
+		//clamp the falloff value such that the "light level" of a tile
+		// never falls below 0.2f
+
+		if (viewFalloff * viewRange > 0.8f) {
+			viewFalloff = 0.8f / viewRange;
+		}
 	}
 
 	// Update is called once per frame
@@ -104,14 +114,20 @@ public class MapManager : MonoBehaviour
 
 			while (!map [mapX, mapY].GetInfo ().solid
 			       && count < viewRange) {
-				map [mapX, mapY].SetVisibility (TileVisibility.visible);
+				if (falloffEnabled)
+					map [mapX, mapY].SetVisibility (TileVisibility.visible, (float)(1.0f - (viewFalloff * count)));
+				else
+					map [mapX, mapY].SetVisibility (TileVisibility.visible);
 				tempX += xDisplacement;
 				tempY += yDisplacement;
 				mapX = (int)Mathf.Round (tempX);
 				mapY = (int)Mathf.Round (tempY);
 				++count;
 			}
-			map [mapX, mapY].SetVisibility (TileVisibility.visible);
+			if (falloffEnabled)
+				map [mapX, mapY].SetVisibility (TileVisibility.visible, (float)(1.0f - (viewFalloff * count)));
+			else
+				map [mapX, mapY].SetVisibility (TileVisibility.visible);
 		}
 	}
 
@@ -447,8 +463,10 @@ public class MapManager : MonoBehaviour
 		//Clear the current maptile gameobjects
 		for (int x = 0; x < mapWidth; ++x) {
 			for (int y = 0; y < mapHeight; ++y) {
-				if (map [x, y] != null)
+				if (map [x, y] != null) {
 					map [x, y].DestroyTile ();
+					Destroy (map [x, y]);
+				}
 			}
 		}
 
