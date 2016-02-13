@@ -457,7 +457,7 @@ public class MapManager : MonoBehaviour
 	/// Called to pseudo-randomly generate a map.
 	/// Returns the co-ordinates of the starting stairs
 	/// </summary>
-	public int[] GenerateMap ()
+	public int[] GenerateMap (int mapWidth, int mapHeight, string paletteName)
 	{
 		int[,] collisionMap = new int[mapWidth, mapHeight];
 		//Clear the current maptile gameobjects

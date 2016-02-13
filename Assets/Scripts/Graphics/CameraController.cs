@@ -53,9 +53,11 @@ public class CameraController : MonoBehaviour
 		playerWidth = player.GetComponent<SpriteRenderer> ().bounds.size.x;
 		playerHeight = player.GetComponent<SpriteRenderer> ().bounds.size.y;
 
-		defaultPosition = new Vector3 (0, 0, -10);
-		defaultPosition.x += (playerWidth / 2);
-		defaultPosition.y += (playerHeight / 2);
+		int[] playerPosition = entityManager.GetPlayerPosition ();
+
+		defaultPosition = new Vector3 (playerPosition[0] * playerWidth + (playerWidth / 2), 
+			playerPosition[1] * playerHeight + (playerHeight / 2), 
+			-10);
 
 		//Orthographic level of the camera represents the number of in-game units half of the vertical screen
 		// size takes. In this case, we make sure it always shows 10 squares in height.
@@ -101,8 +103,8 @@ public class CameraController : MonoBehaviour
 			}
 			int[] playerPosition = entityManager.GetPlayerPosition ();
 			orthoSize = defaultOrtho;
-			targetPosition.x = playerPosition [0] * playerWidth;
-			targetPosition.y = playerPosition [1] * playerHeight;
+			targetPosition.x = playerPosition [0] * playerWidth + (playerWidth / 2);
+			targetPosition.y = playerPosition [1] * playerHeight + (playerHeight / 2);
 		}
 
 		if (Camera.main.orthographicSize != orthoSize) {

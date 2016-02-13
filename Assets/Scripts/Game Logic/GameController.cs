@@ -10,6 +10,7 @@ public class GameController : MonoBehaviour
 
 	private MapManager mapManager;
 	private EntityManager entityManager;
+	private GameParams gameParameters;
 
 	bool newMapNeeded;
 	bool paused;
@@ -26,6 +27,10 @@ public class GameController : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
+		//Load the game parameters
+		GameObject obj_GameParams = GameObject.Find("GameParameters");
+		gameParameters = obj_GameParams.GetComponent<GameParams> ();
+
 		mapManager = obj_MapManager.GetComponent<MapManager> ();
 		entityManager = obj_EntityManager.GetComponent<EntityManager> ();
 		newMapNeeded = true;
@@ -42,7 +47,9 @@ public class GameController : MonoBehaviour
 		//Game logic goes here
 
 		if (newMapNeeded) {
-			int[] playerPos = mapManager.GenerateMap ();
+			int[] playerPos = mapManager.GenerateMap (gameParameters.mapWidth,
+				gameParameters.mapHeight,
+				gameParameters.paletteName);
 			entityManager.Initialise (playerPos [0], playerPos [1]);
 			mapManager.RecalculateFogOfWar (playerPos [0], playerPos [1]);
 			newMapNeeded = false;
@@ -87,7 +94,9 @@ public class GameController : MonoBehaviour
 						//check if player is on stairs
 						if (entityManager.OnDownStairs ()) {
 							//make the player go to a new floor
-							int[] playerStartPosition = mapManager.GenerateMap ();
+							int[] playerStartPosition = mapManager.GenerateMap (gameParameters.mapWidth,
+								gameParameters.mapHeight,
+								gameParameters.paletteName);
 							entityManager.Initialise (playerStartPosition [0],
 								playerStartPosition [1]);
 						}
