@@ -49,7 +49,11 @@
      <Compile Include="Assets\Scripts\Game Logic\EntityManager.cs" />
      <Compile Include="Assets\Scripts\Game Logic\GameController.cs" />
      <Compile Include="Assets\Scripts\Game Logic\MapManager.cs" />
+     <Compile Include="Assets\Scripts\Game Logic\NPCManager.cs" />
+     <Compile Include="Assets\Scripts\Game Logic\Node.cs" />
+     <Compile Include="Assets\Scripts\Game Logic\Player.cs" />
      <Compile Include="Assets\Scripts\Game Logic\PlayerController.cs" />
+     <Compile Include="Assets\Scripts\Game Logic\SearchPerameters.cs" />
      <Compile Include="Assets\Scripts\Graphics\CameraController.cs" />
      <Compile Include="Assets\Scripts\Objects\MapPalette.cs" />
      <Compile Include="Assets\Scripts\Objects\MapTile.cs" />
