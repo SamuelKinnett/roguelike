@@ -34,6 +34,7 @@ public class MapManager : MonoBehaviour
 	{
 		emptyListUpdateNeeded = true;
 		map = new MapTile[mapWidth, mapHeight];
+		dungeon = new Dungeon ();
 
 		//clamp the falloff value such that the "light level" of a tile
 		// never falls below 0.2f
@@ -457,7 +458,11 @@ public class MapManager : MonoBehaviour
 	/// Called to pseudo-randomly generate a map.
 	/// Returns the co-ordinates of the starting stairs
 	/// </summary>
+<<<<<<< HEAD
 	public int[] GenerateMap ()
+=======
+	public int[] GenerateMap (int mapWidth, int mapHeight, string paletteName)
+>>>>>>> parent of 1d8461e... Finalised initial dungeon class
 	{
 		int[,] collisionMap = new int[mapWidth, mapHeight];
 		//Clear the current maptile gameobjects
