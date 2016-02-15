@@ -12,6 +12,7 @@ public class GameController : MonoBehaviour
 	private EntityManager entityManager;
 	private GameParams gameParameters;
 
+	int currentFloor;
 	bool newMapNeeded;
 	bool paused;
 
@@ -33,6 +34,10 @@ public class GameController : MonoBehaviour
 
 		mapManager = obj_MapManager.GetComponent<MapManager> ();
 		entityManager = obj_EntityManager.GetComponent<EntityManager> ();
+
+		//Generate the dungeon
+		mapManager.GenerateDungeon(gameParameters.mapWidth, gameParameters.mapHeight, gameParameters.numberOfFloors);
+		currentFloor = 0;
 		newMapNeeded = true;
 
 		playerMoved = false;
@@ -47,9 +52,8 @@ public class GameController : MonoBehaviour
 		//Game logic goes here
 
 		if (newMapNeeded) {
-			int[] playerPos = mapManager.GenerateMap (gameParameters.mapWidth,
-				gameParameters.mapHeight,
-				gameParameters.paletteName);
+			Debug.Log (currentFloor);
+			int[] playerPos = mapManager.LoadLevel(currentFloor);
 			entityManager.Initialise (playerPos [0], playerPos [1]);
 			mapManager.RecalculateFogOfWar (playerPos [0], playerPos [1]);
 			newMapNeeded = false;
@@ -93,12 +97,27 @@ public class GameController : MonoBehaviour
 						playerMoved = true;
 						//check if player is on stairs
 						if (entityManager.OnDownStairs ()) {
-							//make the player go to a new floor
-							int[] playerStartPosition = mapManager.GenerateMap (gameParameters.mapWidth,
-								gameParameters.mapHeight,
-								gameParameters.paletteName);
-							entityManager.Initialise (playerStartPosition [0],
-								playerStartPosition [1]);
+							if (currentFloor < gameParameters.numberOfFloors - 1) {
+								//make the player go to a new floor
+								mapManager.SaveLevel(currentFloor);
+								++currentFloor;
+								int[] playerStartPosition = mapManager.LoadLevel (currentFloor);
+								entityManager.Initialise (playerStartPosition [0],
+									playerStartPosition [1]);
+							} else {
+								//We're at the bottom
+								Debug.Log ("A winner is you!");
+							}
+						} else if (entityManager.OnUpStairs ()) {
+							if (currentFloor > 0) {
+								mapManager.SaveLevel (currentFloor);
+								--currentFloor;
+								int[] playerStartPosition = mapManager.LoadLevel (currentFloor, true);
+								entityManager.Initialise (playerStartPosition [0],
+									playerStartPosition [1]);
+							} else {
+								Debug.Log ("You can't leave just yet!");
+							}
 						}
 					}
 				}

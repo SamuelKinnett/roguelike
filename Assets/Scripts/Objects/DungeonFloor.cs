@@ -13,11 +13,14 @@ public class DungeonFloor
 	bool bottomFloor;
 	TileVisibility[,] visibilityMap;
 
-	public DungeonFloor (int[,] collisionMap, int[] stairLocations, bool bottomFloor)
+	public DungeonFloor (int width, int height, int[,] collisionMap, int[] stairLocations, bool bottomFloor)
 	{
 		this.collisionMap = collisionMap;
 		this.stairLocations = stairLocations;
 		this.bottomFloor = bottomFloor;
+		visibilityMap = new TileVisibility[width, height];
+		this.width = width;
+		this.height = height;
 	}
 
 	public int[,] GetCollisionMap ()
@@ -29,4 +32,13 @@ public class DungeonFloor
 	{
 		return stairLocations;
 	}
+
+	public void SaveVisibilityMap(TileVisibility[,] tileVisibility) {
+		this.visibilityMap = tileVisibility;
+	}
+
+	public TileVisibility[,] GetVisibilityMap() {
+		return visibilityMap;
+	}
+
 }
