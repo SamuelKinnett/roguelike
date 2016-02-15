@@ -15,8 +15,8 @@ public class NPCManager : MonoBehaviour {
    
 
     int visualRadius;
-    int x;
-    int y;
+    int x;//x co-ordinate
+    int y;//y co-ordinate
 
 
     // Use this for initialization
@@ -43,14 +43,21 @@ public class NPCManager : MonoBehaviour {
     }
 
     
-    public void MoveNPC()
+    public void NPCTurn()
     {
         int playerX = entityManager.GetPlayerPosition()[0];
         int playerY = entityManager.GetPlayerPosition()[1];
+        //check if can attack player
+        if (playerX == x+1&&playerY==y || playerX == x - 1 && playerY == y || playerX == x  && playerY == y +1|| playerX == x && playerY == y - 1)
+        {
+            //attack player
+        }
         //visual detection
         if (playerX >= ( x- visualRadius) && playerX <= (x + visualRadius) && playerY >= (y - visualRadius) && playerY <= (y + visualRadius))
         {
-            Movement(playerX, playerY);//returns int[] of movment position
+            int[] postition = Movement(playerX, playerY);//returns int[] of movment position
+            x = postition[0];
+            y = postition[1];
         }
     }
 
@@ -61,48 +68,46 @@ public class NPCManager : MonoBehaviour {
         npc.Initilise(x, y, 0, 0, 0);
         Node q = npc;
 
-        List<Node> openL = new List<Node>();
-        List<Node> closeL = new List<Node>();
+        List<Node> openL = new List<Node>();//list of nodes to check
+        List<Node> closeL = new List<Node>();//list of checked nodes
         
-        openL.Add(npc);
+        openL.Add(npc);//add start node
 
-        while (openL.Count < 0)
+        while (openL.Count < 0)//nodes to search
         {
             float qf = 100;
-            int i = 0;
             foreach (Node n in openL)
             {
                 if (qf > n.GetF())
                 {
                     qf = n.GetF();
                     q = n;
-                    openL.RemoveAt(i);  
+                    openL.RemoveAt(openL.IndexOf(n));  
                 }
-                i++;
             }
-            if (q.GetX() == playerX && q.GetY() == playerY)
+            if (q.GetX() == playerX && q.GetY() == playerY)//check if route is found
             {
                 return reconstruct_path(q);
             }
+            //search routes
             //up
-            
             if (!mapManager.GetTile(q.GetX(), (q.GetY() + 1)).solid)
             {
                 openL = successorNode(q, q.GetX(), (q.GetY() + 1), playerX, playerY,openL,closeL);
             }
-            closeL.Add(q);
+
             //down
             if (!mapManager.GetTile(q.GetX(), (q.GetY() - 1)).solid)
             {
                 openL = successorNode(q, q.GetX(), (q.GetY() - 1), playerX, playerY, openL, closeL);
             }
-            closeL.Add(q);
+            
             //left
             if (!mapManager.GetTile((q.GetX()+1), q.GetY()).solid)
             {
                 openL = successorNode(q, (q.GetX()+1), q.GetY(), playerX, playerY, openL, closeL);
             }
-            closeL.Add(q);
+           
             //right
             if (!mapManager.GetTile((q.GetX() - 1), q.GetY()).solid)
             {
@@ -132,12 +137,12 @@ public class NPCManager : MonoBehaviour {
         bool closeList = false;
         Node successor = new Node();
         successor = q;
-        successor.SetX(x);
+        successor.SetX(x);//set  new co-ordinates
         successor.SetY(y);
-        successor.SetParent(q);
-        successor.SetG(q.GetG() + 1);
+        successor.SetParent(q);//set parent node
+        successor.SetG(q.GetG() + 1);//set cost to get to node
         float h = Mathf.Abs(successor.GetX() - playerX) + Mathf.Abs(successor.GetY() - playerY);
-        successor.SetH(h);
+        successor.SetH(h);//set heuristic cost to get to node
         successor.SetF();
 
         foreach (Node o in openL)
