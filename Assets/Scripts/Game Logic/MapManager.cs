@@ -22,6 +22,9 @@ public class MapManager : MonoBehaviour
 	bool emptyListUpdateNeeded;
 	//Do we need to populate the list of empty tiles?
 
+	Dungeon dungeon;
+	//The dungeon that the player is exploring
+
 	//TESTING
 	public Sprite testingSprite;
 	public Sprite upStair;
@@ -34,6 +37,7 @@ public class MapManager : MonoBehaviour
 	{
 		emptyListUpdateNeeded = true;
 		map = new MapTile[mapWidth, mapHeight];
+		dungeon = new Dungeon ();
 
 		//clamp the falloff value such that the "light level" of a tile
 		// never falls below 0.2f
