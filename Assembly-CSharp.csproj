@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Scripts\File Management\Spritesheet.cs" />
+     <Compile Include="Assets\Scripts\GUI\MenuManager.cs" />
      <Compile Include="Assets\Scripts\Game Logic\EntityManager.cs" />
      <Compile Include="Assets\Scripts\Game Logic\GameController.cs" />
      <Compile Include="Assets\Scripts\Game Logic\MapManager.cs" />
@@ -55,6 +56,9 @@
      <Compile Include="Assets\Scripts\Game Logic\PlayerController.cs" />
      <Compile Include="Assets\Scripts\Game Logic\SearchPerameters.cs" />
      <Compile Include="Assets\Scripts\Graphics\CameraController.cs" />
+     <Compile Include="Assets\Scripts\Objects\Dungeon.cs" />
+     <Compile Include="Assets\Scripts\Objects\DungeonFloor.cs" />
+     <Compile Include="Assets\Scripts\Objects\GameParameters.cs" />
      <Compile Include="Assets\Scripts\Objects\MapPalette.cs" />
      <Compile Include="Assets\Scripts\Objects\MapTile.cs" />
      <None Include="Assets\Graphics\README.txt" />

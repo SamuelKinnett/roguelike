@@ -10,9 +10,11 @@ public class GameController : MonoBehaviour
 
 	private MapManager mapManager;
 	private EntityManager entityManager;
+	private GameParameters gameParameters;
 
 	bool newMapNeeded;
 	bool paused;
+	int currentFloor;
 
 	//flags used for the gameloop
 	bool playerMoved;
@@ -28,6 +30,14 @@ public class GameController : MonoBehaviour
 	{
 		mapManager = obj_MapManager.GetComponent<MapManager> ();
 		entityManager = obj_EntityManager.GetComponent<EntityManager> ();
+		GameObject gameParams = GameObject.Find ("GameParams");
+		gameParameters = gameParams.GetComponent<GameParameters> ();
+
+
+		mapManager.GenerateDungeon (gameParameters.mapWidth,
+			gameParameters.mapHeight,
+			gameParameters.numberOfFloors);
+		currentFloor = 0;
 		newMapNeeded = true;
 
 		playerMoved = false;
@@ -42,13 +52,7 @@ public class GameController : MonoBehaviour
 		//Game logic goes here
 
 		if (newMapNeeded) {
-<<<<<<< HEAD
-			int[] playerPos = mapManager.GenerateMap ();
-=======
-			int[] playerPos = mapManager.GenerateMap (gameParameters.mapWidth,
-				gameParameters.mapHeight,
-				gameParameters.paletteName);
->>>>>>> parent of 1d8461e... Finalised initial dungeon class
+			int[] playerPos = mapManager.LoadMap (currentFloor);
 			entityManager.Initialise (playerPos [0], playerPos [1]);
 			mapManager.RecalculateFogOfWar (playerPos [0], playerPos [1]);
 			newMapNeeded = false;
@@ -92,16 +96,26 @@ public class GameController : MonoBehaviour
 						playerMoved = true;
 						//check if player is on stairs
 						if (entityManager.OnDownStairs ()) {
-							//make the player go to a new floor
-<<<<<<< HEAD
-							int[] playerStartPosition = mapManager.GenerateMap ();
-=======
-							int[] playerStartPosition = mapManager.GenerateMap (gameParameters.mapWidth,
-								gameParameters.mapHeight,
-								gameParameters.paletteName);
->>>>>>> parent of 1d8461e... Finalised initial dungeon class
-							entityManager.Initialise (playerStartPosition [0],
-								playerStartPosition [1]);
+							if (currentFloor < gameParameters.numberOfFloors - 1) {
+								//make the player go to a new floor
+								mapManager.SaveMap (currentFloor);
+								++currentFloor;
+								int[] playerStartPosition = mapManager.LoadMap (currentFloor);
+								entityManager.Initialise (playerStartPosition [0],
+									playerStartPosition [1]);
+							} else {
+								Debug.Log ("Bottom floor: You won!");
+							}
+						} else if (entityManager.OnUpStairs ()) {
+							if (currentFloor > 0) {
+								mapManager.SaveMap (currentFloor);
+								--currentFloor;
+								int[] playerStartPosition = mapManager.LoadMap (currentFloor, true);
+								entityManager.Initialise (playerStartPosition [0],
+									playerStartPosition [1]);
+							} else {
+								Debug.Log ("You can't leave just yet!");
+							}
 						}
 					}
 				}

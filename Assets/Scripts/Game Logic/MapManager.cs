@@ -19,8 +19,7 @@ public class MapManager : MonoBehaviour
 	public float viewFalloff;
 	public bool falloffEnabled;
 
-	bool emptyListUpdateNeeded;
-	//Do we need to populate the list of empty tiles?
+	Dungeon dungeon;
 
 	//TESTING
 	public Sprite testingSprite;
@@ -32,9 +31,7 @@ public class MapManager : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
-		emptyListUpdateNeeded = true;
 		map = new MapTile[mapWidth, mapHeight];
-		dungeon = new Dungeon ();
 
 		//clamp the falloff value such that the "light level" of a tile
 		// never falls below 0.2f
@@ -42,12 +39,6 @@ public class MapManager : MonoBehaviour
 		if (viewFalloff * viewRange > 0.8f) {
 			viewFalloff = 0.8f / viewRange;
 		}
-	}
-
-	// Update is called once per frame
-	void Update ()
-	{
-		
 	}
 
 	/// <summary>
@@ -66,9 +57,6 @@ public class MapManager : MonoBehaviour
 		//Create and instantiate a new random number generator
 		System.Random rand = new System.Random ();
 
-		if (emptyListUpdateNeeded)
-			UpdateEmptyTileList ();
-
 		//Return the index of a random empty tile
 		int returnTileIndex = (int)((emptyTiles.Count - 1) * rand.NextDouble ()); 
 
@@ -84,11 +72,13 @@ public class MapManager : MonoBehaviour
 	/// </summary>
 	void UpdateEmptyTileList ()
 	{
-
+		emptyTiles = new List<MapTile> ();
 		for (int x = 0; x < mapWidth; ++x) {
 			for (int y = 0; y < mapHeight; ++y) {
-				if (!map [x, y].GetInfo ().solid)
-					emptyTiles.Add (map [x, y]);
+				if (map [x, y] != null) {
+					if (!map [x, y].GetInfo ().solid)
+						emptyTiles.Add (map [x, y]);
+				}
 			}
 		}
 	}
@@ -454,28 +444,24 @@ public class MapManager : MonoBehaviour
 		}
 	}
 
+	public void GenerateDungeon (int mapWidth, int mapHeight, int numberOfFloors)
+	{
+		dungeon = new Dungeon ();
+		for (int floor = 0; floor < numberOfFloors - 1; ++floor) {
+			GenerateFloor (mapWidth, mapHeight);
+		}
+		GenerateFloor (mapWidth, mapHeight, true);
+	}
+
 	/// <summary>
 	/// Called to pseudo-randomly generate a map.
 	/// Returns the co-ordinates of the starting stairs
 	/// </summary>
-<<<<<<< HEAD
-	public int[] GenerateMap ()
-=======
-	public int[] GenerateMap (int mapWidth, int mapHeight, string paletteName)
->>>>>>> parent of 1d8461e... Finalised initial dungeon class
+	public void GenerateFloor (int mapWidth, int mapHeight, bool bottomFloor = false)
 	{
 		int[,] collisionMap = new int[mapWidth, mapHeight];
-		//Clear the current maptile gameobjects
-		for (int x = 0; x < mapWidth; ++x) {
-			for (int y = 0; y < mapHeight; ++y) {
-				if (map [x, y] != null) {
-					map [x, y].DestroyTile ();
-					Destroy (map [x, y]);
-				}
-			}
-		}
-
 		MapNode mapGenerator = new MapNode (0, 0, mapWidth, mapHeight, 0);
+
 		mapGenerator.Split (4);	//This will split the map 4 times
 
 		//Now, generate the collision map
@@ -486,22 +472,71 @@ public class MapManager : MonoBehaviour
 
 		stairPositions = PlaceStairs (collisionMap);
 
-		CreateTiles (collisionMap);
+		dungeon.AddFloor (mapWidth, mapHeight, collisionMap, stairPositions, bottomFloor);
+	}
 
-		emptyListUpdateNeeded = true;	//Now that we've generated the map, it'll need an update to the empty list
+	/// <summary>
+	/// Loads the map at the specified level
+	/// </summary>
+	/// <returns>The map.</returns>
+	/// <param name="level">Level.</param>
+	public int[] LoadMap (int level, bool returning = false)
+	{
+		int[,] collisionMap = new int[mapWidth, mapHeight];
 
-		int[] upStairsPosition = new int[2];
-		upStairsPosition [0] = stairPositions [0];
-		upStairsPosition [1] = stairPositions [1];
+		//Clear the current maptile gameobjects
+		for (int x = 0; x < mapWidth; ++x) {
+			for (int y = 0; y < mapHeight; ++y) {
+				if (map [x, y] != null) {
+					map [x, y].DestroyTile ();
+					Destroy (map [x, y]);
+				}
+			}
+		}
+			
+		stairPositions = dungeon.GetFloor (level).GetStairPositions ();
+		CreateTiles (dungeon.GetFloor (level).GetCollisionMap (),
+			dungeon.GetFloor (level).GetVisibilityMap ());
 
-		return upStairsPosition;
+		UpdateEmptyTileList ();
+
+		int[] returnPositions = new int[2];
+
+		if (returning) {
+			//The player has gone up the stairs
+			returnPositions [0] = stairPositions [2];
+			returnPositions [1] = stairPositions [3];
+		} else {
+			returnPositions [0] = stairPositions [0];
+			returnPositions [1] = stairPositions [1];
+		}
+
+		return returnPositions;
+	}
+
+	/// <summary>
+	/// Any variables that need to be saved to a particular level go here.
+	/// </summary>
+	/// <param name="level">Level.</param>
+	public void SaveMap (int level)
+	{
+		TileVisibility[,] visibilityMap = new TileVisibility[mapWidth, mapHeight];
+		for (int x = 0; x < mapWidth; ++x) {
+			for (int y = 0; y < mapHeight; ++y) {
+				if (map [x, y] != null) {
+					visibilityMap [x, y] = map [x, y].GetInfo ().visibility;
+				}
+			}
+		}
+
+		dungeon.SetVisibilityMap (visibilityMap, level);
 	}
 
 	/// <summary>
 	/// Creates tile instances and intelligently assigns them sprites
 	/// </summary>
 	//TODO: Implement a way of distinguishing between rooms and corridors
-	void CreateTiles (int[,] collisionMap)
+	void CreateTiles (int[,] collisionMap, TileVisibility[,] visibilityMap)
 	{
 
 		//Load tile palette;
@@ -519,11 +554,13 @@ public class MapManager : MonoBehaviour
 					//This tile is the upwards staircase
 					map [tempX, tempY] = new MapTile ();
 					map [tempX, tempY].CreateTile (tempX, tempY, false, true, false, upStair);
+					map [tempX, tempY].SetVisibility (visibilityMap [tempX, tempY]);
 				} else if (tempX == stairPositions [2] &&
 				           tempY == stairPositions [3]) {
 					//This tile is the downwards staircase
 					map [tempX, tempY] = new MapTile ();
 					map [tempX, tempY].CreateTile (tempX, tempY, false, false, true, downStair);
+					map [tempX, tempY].SetVisibility (visibilityMap [tempX, tempY]);
 				} else {
 					if (collisionMap [tempX, tempY] == 1) {
 						//using bits as flags, work out the index of the sprite for the tile
@@ -614,6 +651,7 @@ public class MapManager : MonoBehaviour
 						//Debug.Log ("Here's a tile!");
 						map [tempX, tempY] = new MapTile ();
 						map [tempX, tempY].CreateTile (tempX, tempY, false, false, false, tileSprite);
+						map [tempX, tempY].SetVisibility (visibilityMap [tempX, tempY]);
 					} else {
 						if (tempX == 0) {
 							if (tempY == 0) {
@@ -785,6 +823,7 @@ public class MapManager : MonoBehaviour
 					//Debug.Log ("Here's a tile!");
 					map [tempX, tempY] = new MapTile ();
 					map [tempX, tempY].CreateTile (tempX, tempY, true, false, false, tileSprite);
+					map [tempX, tempY].SetVisibility (visibilityMap [tempX, tempY]);
 				}
 			}
 		}

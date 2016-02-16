@@ -2,19 +2,22 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class SearchPerameters : MonoBehaviour  {
-    class node
-    {
+public class SearchPerameters : MonoBehaviour
+{
+	class node
+	{
         
-    }
-    // Use this for initialization
-    void Start (int playerX, int playerY,int npcX, int npcY) {
+	}
+	// Use this for initialization
+	void Start ()
+	{
 
        
-    }
+	}
 	
 	// Update is called once per frame
-	void Update () {
+	void Update ()
+	{
 	
 	}
 }
