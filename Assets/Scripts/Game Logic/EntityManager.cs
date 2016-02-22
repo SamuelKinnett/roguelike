@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public enum directions
 {
@@ -20,20 +21,19 @@ public class EntityManager : MonoBehaviour
 	private MapManager mapManager;
 	private PlayerController playerController;
 
+	List<NPCManager> enemies;
+
 	int playerX;
 	int playerY;
+
+	//TESTING
+	public Sprite testEnemySprite;
 
 	// Use this for initialization
 	void Start ()
 	{
 		mapManager = obj_MapManager.GetComponent<MapManager> ();
 		playerController = obj_Player.GetComponent<PlayerController> ();
-	}
-	
-	// Update is called once per frame
-	void Update ()
-	{
-	
 	}
 
 	// Place the player at the specicified position and generate enemies
@@ -42,25 +42,49 @@ public class EntityManager : MonoBehaviour
 		this.playerX = playerX;
 		this.playerY = playerY;
 		playerController.SetPosition (playerX, playerY);
+
+		//Generate enemies
+		if (enemies != null) {
+			foreach (NPCManager curNPC in enemies) {
+				curNPC.DestroyNPC ();
+			}
+		}
+
+		int numberOfEnemies = (int)(5 * Random.value + 1);	//Generate between 1 and 6 (both inclusive) enemies
+		enemies = new List<NPCManager> ();
+
+		//Temporary placeholder stats
+		int[] tempStats = new int[6];
+		tempStats [(int)stats.agility] = 4;
+		tempStats [(int)stats.armour] = 2;
+		tempStats [(int)stats.attack] = 4;
+		tempStats [(int)stats.hp] = 10;
+		tempStats [(int)stats.magicArmour] = 0;
+		tempStats [(int)stats.magicAttack] = 0;
+
+		for (int curEnemy = 0; curEnemy < numberOfEnemies; curEnemy++) {
+			enemies.Add (new NPCManager ());
+			enemies [curEnemy].CreateNPC (tempStats, testEnemySprite);
+		}
+
 	}
 
 	/// <summary>
 	/// Updates the NPCs in the game world. All update logic goes here
+	/// If the player has been killed by the NPCS, return true.
 	/// </summary>
-	void UpdateNPC ()
+	public bool UpdateNPCs ()
 	{
-		//Move NPCS
-		//Handle combat
-	}
+		bool playerKilled = false;
+		foreach (NPCManager curNPC in enemies) {
+			if (curNPC.CanAttack (playerX, playerY)) {
+				playerKilled = (EnemyAttackPlayer (curNPC.GetStats ()));
+			} else {
+				curNPC.Move (playerX, playerY);
+			}
+		}
 
-	/// <summary>
-	/// Spawns the specified number of a selection of enemies
-	/// </summary>
-	/// <param name="difficulty">Difficulty.</param>
-	/// <param name="count">Count.</param>
-	void SpawnEnemies (float difficulty, int count)
-	{
-
+		return playerKilled;
 	}
 
 	/// <summary>
@@ -152,5 +176,15 @@ public class EntityManager : MonoBehaviour
 		position [1] = playerY;
 
 		return position;
+	}
+
+	/// <summary>
+	/// Handles an attack on the player by an enemy. If the player is killed, return true.
+	/// </summary>
+	/// <returns><c>true</c>, if attack player was enemyed, <c>false</c> otherwise.</returns>
+	/// <param name="enemyStats">Enemy stats.</param>
+	bool EnemyAttackPlayer (int[] enemyStats)
+	{
+		return (playerController.PlayerHit (enemyStats));
 	}
 }

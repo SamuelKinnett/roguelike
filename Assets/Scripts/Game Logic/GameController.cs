@@ -130,7 +130,10 @@ public class GameController : MonoBehaviour
 				if (Input.GetKeyUp (key) || pauseCounter > 0.1f)
 					pauseFinished = true;
 			} else if (!entitiesUpdated) {
-				//	UpdateEntities();
+				if (entityManager.UpdateNPCs ()) {
+					//The player has been killed. End the game.
+					GameOver ();
+				}
 				entityManager.UpdateEntityPositions ();
 				entitiesUpdated = true;
 			} else {
@@ -158,5 +161,10 @@ public class GameController : MonoBehaviour
 	public void Resume ()
 	{
 		paused = false;
+	}
+
+	void GameOver ()
+	{
+		paused = true;
 	}
 }
