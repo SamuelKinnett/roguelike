@@ -55,15 +55,16 @@ public class EntityManager : MonoBehaviour
 
 		//Temporary placeholder stats
 		int[] tempStats = new int[6];
-		tempStats [(int)stats.agility] = 4;
-		tempStats [(int)stats.armour] = 2;
-		tempStats [(int)stats.attack] = 4;
-		tempStats [(int)stats.hp] = 10;
-		tempStats [(int)stats.magicArmour] = 0;
-		tempStats [(int)stats.magicAttack] = 0;
+		tempStats [(int)Stats.agility] = 4;
+		tempStats [(int)Stats.armour] = 2;
+		tempStats [(int)Stats.attack] = 4;
+		tempStats [(int)Stats.hp] = 10;
+		tempStats [(int)Stats.magicArmour] = 0;
+		tempStats [(int)Stats.magicAttack] = 0;
 
 		for (int curEnemy = 0; curEnemy < numberOfEnemies; curEnemy++) {
 			enemies.Add (new NPCManager ());
+			enemies [curEnemy].obj_MapManager = obj_MapManager;
 			enemies [curEnemy].CreateNPC (tempStats, testEnemySprite);
 		}
 
@@ -89,45 +90,79 @@ public class EntityManager : MonoBehaviour
 
 	/// <summary>
 	/// If possile, move the player in the specified direction. If not, return false.
+	/// If an enemy is in the way, attack them.
 	/// </summary>
 	/// <returns><c>true</c>, if player was moved, <c>false</c> otherwise.</returns>
 	/// <param name="direction">Direction.</param>
 	public bool MovePlayer (directions direction)
 	{
 		TileInfo targetTile;
+		int[,] tempEnemyMap = new int[mapManager.mapWidth, mapManager.mapHeight];
+		for (int curEnemy = 0; curEnemy < enemies.Count; ++curEnemy) {
+			tempEnemyMap[enemies[curEnemy].GetPosition()[0], enemies[curEnemy].GetPosition()[1]] = curEnemy;
+		}
 
 		switch (direction) {
 		case directions.north:
 			targetTile = mapManager.GetTile (playerX, playerY + 1);
-			if (!targetTile.solid) {
+			if (!targetTile.solid && tempEnemyMap [playerX, playerY + 1] == 0) {
 				//The player can move
 				++playerY;
 				playerController.SetPosition (playerX, playerY);
 				return true;
+			} else if (tempEnemyMap [playerX, playerY + 1] > 0) {
+				//Attack the enemy. If the player kills them, move into the space.
+				if (PlayerAttackEnemy (playerController.GetAllPlayerStats (), tempEnemyMap [playerX, playerY + 1])) {
+					++playerY;
+					playerController.SetPosition (playerX, playerY);
+					return true;
+				}
 			}
 			break;
 		case directions.east:
 			targetTile = mapManager.GetTile (playerX + 1, playerY);
-			if (!targetTile.solid) {
+			if (!targetTile.solid && tempEnemyMap [playerX + 1, playerY] == 0) {
 				++playerX;
 				playerController.SetPosition (playerX, playerY);
 				return true;
+			} else if (tempEnemyMap [playerX + 1, playerY] > 0) {
+				//Attack the enemy. If the player kills them, move into the space.
+				if (PlayerAttackEnemy (playerController.GetAllPlayerStats (), tempEnemyMap [playerX + 1, playerY])) {
+					++playerX;
+					playerController.SetPosition (playerX, playerY);
+					return true;
+				}
 			}
 			break;
 		case directions.south:
 			targetTile = mapManager.GetTile (playerX, playerY - 1);
-			if (!targetTile.solid) {
+			if (!targetTile.solid && tempEnemyMap [playerX, playerY - 1] == 0) {
 				--playerY;
 				playerController.SetPosition (playerX, playerY);
 				return true;
+			} else if (tempEnemyMap [playerX, playerY - 1] > 0) {
+				//Attack the enemy. If the player kills them, move into the space.
+				if (PlayerAttackEnemy (playerController.GetAllPlayerStats (), tempEnemyMap [playerX, playerY - 1])) {
+					--playerY;
+					playerController.SetPosition (playerX, playerY);
+					return true;
+				}
 			}
 			break;
 		case directions.west:
 			targetTile = mapManager.GetTile (playerX - 1, playerY);
-			if (!targetTile.solid) {
+			if (!targetTile.solid && tempEnemyMap [playerX - 1, playerY] == 0) {
 				--playerX;
 				playerController.SetPosition (playerX, playerY);
 				return true;
+			} else if (tempEnemyMap [playerX - 1, playerY] > 0) {
+				//Attack the enemy. If the player kills them, move into the space.
+				if (PlayerAttackEnemy (playerController.GetAllPlayerStats (), tempEnemyMap [playerX - 1, playerY])) {
+					--playerX;
+					playerController.SetPosition (playerX, playerY);
+					return true;
+				}
+				return false;
 			}
 			break;
                 
@@ -186,5 +221,14 @@ public class EntityManager : MonoBehaviour
 	bool EnemyAttackPlayer (int[] enemyStats)
 	{
 		return (playerController.PlayerHit (enemyStats));
+	}
+
+	bool PlayerAttackEnemy (int[] playerStats, int enemyIndex)
+	{
+		if (enemies [enemyIndex].NPCHit (playerStats)) {
+			enemies.RemoveAt (enemyIndex);
+			return true;
+		}
+		return false;
 	}
 }

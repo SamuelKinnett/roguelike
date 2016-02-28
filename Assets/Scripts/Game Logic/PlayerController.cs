@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public enum stats
+public enum Stats
 {
 	attack,
 	armour,
@@ -29,7 +29,7 @@ public class PlayerController : MonoBehaviour
 		for (int i = 0; i < playerStats.Length; i++) {
 			playerStats [i] = 10; //Temporary set value of all stats for testing TODO: Change to 0
 		}
-		playerStats [(int)stats.hp] = 25; //Sets starting HP for character to 25
+		playerStats [(int)Stats.hp] = 25; //Sets starting HP for character to 25
 	}
 	
 	// Update is called once per frame
@@ -57,7 +57,7 @@ public class PlayerController : MonoBehaviour
 		return playerStats;
 	}
 
-	public int GetStat (stats stat)
+	public int GetStat (Stats stat)
 	{
 		return playerStats [(int)stat];
 	}
@@ -66,9 +66,9 @@ public class PlayerController : MonoBehaviour
 	// Return true if the player is killed.
 	public bool PlayerHit (int[] enemyStats)
 	{
-		int damageDone = enemyStats [(int)stats.attack] - playerStats [(int)stats.armour];
-		playerStats [(int)stats.hp] -= damageDone;
-		if (playerStats [(int)stats.hp] < 1) {
+		int damageDone = enemyStats [(int)Stats.attack] - playerStats [(int)Stats.armour];
+		playerStats [(int)Stats.hp] -= damageDone;
+		if (playerStats [(int)Stats.hp] < 1) {
 			return true;
 		}
 		return false;

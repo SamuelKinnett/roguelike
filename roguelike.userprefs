@@ -1,18 +1,26 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Game Logic\NPCManager.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Game Logic/EntityManager.cs">
     <Files>
-      <File FileName="Assets\Scripts\Game Logic\NPCManager.cs" Line="74" Column="40" />
-      <File FileName="Assets\Scripts\Game Logic\MapManager.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Game Logic\SearchPerameters.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Objects\GameParameters.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Objects\DungeonFloor.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Objects\Dungeon.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\GUI\MenuManager.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Game Logic\Node.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Game Logic\GameController.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Game Logic\EntityManager.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Game Logic/PlayerController.cs" Line="56" Column="3" />
+      <File FileName="Assets/Scripts/Game Logic/EntityManager.cs" Line="149" Column="6" />
+      <File FileName="Assets/Scripts/Game Logic/NPCManager.cs" Line="18" Column="2" />
     </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="roguelike" expanded="True">
+            <Node name="Assembly-CSharp" expanded="True">
+              <Node name="Scripts" expanded="True">
+                <Node name="Game Logic" expanded="True">
+                  <Node name="EntityManager.cs" selected="True" />
+                </Node>
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />

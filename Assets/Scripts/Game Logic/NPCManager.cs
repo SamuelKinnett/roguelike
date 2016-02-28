@@ -6,7 +6,6 @@ public class NPCManager : MonoBehaviour
 {
 
 	public GameObject obj_MapManager;
-	public GameObject obj_Node;
     
 	public SpriteRenderer spriteRenderer;
 	private float worldWidth, worldHeight;
@@ -30,7 +29,6 @@ public class NPCManager : MonoBehaviour
 		worldWidth = spriteRenderer.bounds.size.x;
 		worldHeight = spriteRenderer.bounds.size.y;
 
-		mapManager = obj_MapManager.GetComponent<MapManager> ();
 		visualRadius = 5;
 	}
 
@@ -38,6 +36,7 @@ public class NPCManager : MonoBehaviour
 	{
 		worldNPC = new GameObject ();
 		spriteRenderer = worldNPC.AddComponent<SpriteRenderer> ();
+		mapManager = obj_MapManager.GetComponent<MapManager> ();
 
 		int[] randomPosition = new int[2];
 		randomPosition = mapManager.GetRandomPosition ();
@@ -69,17 +68,31 @@ public class NPCManager : MonoBehaviour
 		return false;
 	}
 
+	public bool NPCHit(int[] playerStats) {
+		int damageDone = playerStats [(int)Stats.attack] - stats [(int)Stats.armour];
+		stats [(int)Stats.hp] -= damageDone;
+		if (stats [(int)Stats.hp] < 1) {
+			return true;
+		}
+		return false;
+	}
 
 	public int[] GetStats ()
 	{
 		return stats;
 	}
 
+	public int[] GetPosition() {
+		return new int[2]{x, y};
+	}
+
 	void UpdateWorldPosition ()
 	{
-		Vector3 tempTransform = this.transform.position;
+		Vector3 tempTransform = worldNPC.transform.position;
 		tempTransform.x = x * spriteRenderer.bounds.size.x;
 		tempTransform.y = y * spriteRenderer.bounds.size.y;
+		tempTransform.z = -1;
+		worldNPC.transform.position = tempTransform;
 	}
 
 	#region movement
@@ -105,7 +118,7 @@ public class NPCManager : MonoBehaviour
 	public int[] Movement (int playerX, int playerY)
 	{
 		//A* psudocode -> http://web.mit.edu/eranki/www/tutorials/search/
-		Node npc = obj_Node.GetComponent<Node> ();
+		Node npc = new Node();
 		npc.Initilise (x, y, 0, 0, 0);
 		Node q = npc;
 
@@ -114,7 +127,7 @@ public class NPCManager : MonoBehaviour
         
 		openL.Add (npc);//add start node
 
-		while (openL.Count < 0) {//nodes to search
+		while (openL.Count > 0) {//nodes to search
 			float qf = 100;
 			foreach (Node n in openL) {
 				if (qf > n.GetF ()) {
@@ -149,7 +162,10 @@ public class NPCManager : MonoBehaviour
 			closeL.Add (q);
 		}
         
-		return null;
+		int[] returnArray = new int[2];
+		returnArray [0] = closeL [1].GetX ();
+		returnArray [1] = closeL [1].GetY ();
+		return returnArray;
 	}
 
 	int[] reconstruct_path (Node node)

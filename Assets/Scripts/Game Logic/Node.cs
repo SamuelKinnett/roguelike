@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Node : MonoBehaviour {
+public class Node {
 
     public Node parent;
     public int x;
