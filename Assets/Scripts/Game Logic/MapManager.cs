@@ -105,9 +105,10 @@ public class MapManager : MonoBehaviour
 
 			while (!map [mapX, mapY].GetInfo ().solid
 			       && count < viewRange) {
-				if (falloffEnabled)
-					map [mapX, mapY].SetVisibility (TileVisibility.visible, (float)(1.0f - (viewFalloff * count)));
-				else
+				if (falloffEnabled) {
+					map [mapX, mapY].SetLightIntensity ((float)(1.0f - (viewFalloff * count)));
+					map [mapX, mapY].SetVisibility (TileVisibility.visible);
+				} else
 					map [mapX, mapY].SetVisibility (TileVisibility.visible);
 				tempX += xDisplacement;
 				tempY += yDisplacement;
@@ -115,9 +116,10 @@ public class MapManager : MonoBehaviour
 				mapY = (int)Mathf.Round (tempY);
 				++count;
 			}
-			if (falloffEnabled)
-				map [mapX, mapY].SetVisibility (TileVisibility.visible, (float)(1.0f - (viewFalloff * count)));
-			else
+			if (falloffEnabled) {
+				map [mapX, mapY].SetLightIntensity ((float)(1.0f - (viewFalloff * count)));
+				map [mapX, mapY].SetVisibility (TileVisibility.visible);
+			} else
 				map [mapX, mapY].SetVisibility (TileVisibility.visible);
 		}
 	}

@@ -86,6 +86,9 @@ public class GameController : MonoBehaviour
 					direction = directions.west;
 					key = "left";
 					moveKeyPressed = true;
+				} else if (Input.GetKey(KeyCode.Hash)) {
+					//temporary wait key
+					playerMoved = true;
 				}
 
 				//ensure that only valid keys have been pushed
@@ -135,6 +138,7 @@ public class GameController : MonoBehaviour
 					GameOver ();
 				}
 				entityManager.UpdateEntityPositions ();
+				entityManager.updateEntityCollisionKnowledge ();
 				entitiesUpdated = true;
 			} else {
 				//Reset the flags

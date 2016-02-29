@@ -67,8 +67,12 @@ public class PlayerController : MonoBehaviour
 	public bool PlayerHit (int[] enemyStats)
 	{
 		int damageDone = enemyStats [(int)Stats.attack] - playerStats [(int)Stats.armour];
+		if (damageDone < 1)
+			damageDone = 1;
 		playerStats [(int)Stats.hp] -= damageDone;
+		Debug.Log ("Player hit for " + damageDone + " damage!");
 		if (playerStats [(int)Stats.hp] < 1) {
+			Debug.Log ("Player killed!");
 			return true;
 		}
 		return false;

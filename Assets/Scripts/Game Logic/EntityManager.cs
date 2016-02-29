@@ -99,7 +99,7 @@ public class EntityManager : MonoBehaviour
 		TileInfo targetTile;
 		int[,] tempEnemyMap = new int[mapManager.mapWidth, mapManager.mapHeight];
 		for (int curEnemy = 0; curEnemy < enemies.Count; ++curEnemy) {
-			tempEnemyMap[enemies[curEnemy].GetPosition()[0], enemies[curEnemy].GetPosition()[1]] = curEnemy;
+			tempEnemyMap[enemies[curEnemy].GetPosition()[0], enemies[curEnemy].GetPosition()[1]] = curEnemy + 1;
 		}
 
 		switch (direction) {
@@ -112,9 +112,9 @@ public class EntityManager : MonoBehaviour
 				return true;
 			} else if (tempEnemyMap [playerX, playerY + 1] > 0) {
 				//Attack the enemy. If the player kills them, move into the space.
-				if (PlayerAttackEnemy (playerController.GetAllPlayerStats (), tempEnemyMap [playerX, playerY + 1])) {
+				if (PlayerAttackEnemy (playerController.GetAllPlayerStats (), tempEnemyMap [playerX, playerY + 1] - 1)) {
 					++playerY;
-					playerController.SetPosition (playerX, playerY);
+					//playerController.SetPosition (playerX, playerY);
 					return true;
 				}
 			}
@@ -127,9 +127,9 @@ public class EntityManager : MonoBehaviour
 				return true;
 			} else if (tempEnemyMap [playerX + 1, playerY] > 0) {
 				//Attack the enemy. If the player kills them, move into the space.
-				if (PlayerAttackEnemy (playerController.GetAllPlayerStats (), tempEnemyMap [playerX + 1, playerY])) {
+				if (PlayerAttackEnemy (playerController.GetAllPlayerStats (), tempEnemyMap [playerX + 1, playerY] - 1)) {
 					++playerX;
-					playerController.SetPosition (playerX, playerY);
+					//playerController.SetPosition (playerX, playerY);
 					return true;
 				}
 			}
@@ -142,9 +142,9 @@ public class EntityManager : MonoBehaviour
 				return true;
 			} else if (tempEnemyMap [playerX, playerY - 1] > 0) {
 				//Attack the enemy. If the player kills them, move into the space.
-				if (PlayerAttackEnemy (playerController.GetAllPlayerStats (), tempEnemyMap [playerX, playerY - 1])) {
+				if (PlayerAttackEnemy (playerController.GetAllPlayerStats (), tempEnemyMap [playerX, playerY - 1] - 1)) {
 					--playerY;
-					playerController.SetPosition (playerX, playerY);
+					//playerController.SetPosition (playerX, playerY);
 					return true;
 				}
 			}
@@ -157,9 +157,9 @@ public class EntityManager : MonoBehaviour
 				return true;
 			} else if (tempEnemyMap [playerX - 1, playerY] > 0) {
 				//Attack the enemy. If the player kills them, move into the space.
-				if (PlayerAttackEnemy (playerController.GetAllPlayerStats (), tempEnemyMap [playerX - 1, playerY])) {
+				if (PlayerAttackEnemy (playerController.GetAllPlayerStats (), tempEnemyMap [playerX - 1, playerY] - 1)) {
 					--playerX;
-					playerController.SetPosition (playerX, playerY);
+					//playerController.SetPosition (playerX, playerY);
 					return true;
 				}
 				return false;
@@ -218,16 +218,35 @@ public class EntityManager : MonoBehaviour
 	/// </summary>
 	/// <returns><c>true</c>, if attack player was enemyed, <c>false</c> otherwise.</returns>
 	/// <param name="enemyStats">Enemy stats.</param>
-	bool EnemyAttackPlayer (int[] enemyStats)
+	public bool EnemyAttackPlayer (int[] enemyStats)
 	{
 		return (playerController.PlayerHit (enemyStats));
 	}
 
-	bool PlayerAttackEnemy (int[] playerStats, int enemyIndex)
+	public bool PlayerAttackEnemy (int[] playerStats, int enemyIndex)
 	{
 		if (enemies [enemyIndex].NPCHit (playerStats)) {
 			enemies.RemoveAt (enemyIndex);
 			return true;
+		}
+		return false;
+	}
+
+	public void updateEntityCollisionKnowledge() {
+		foreach (NPCManager currentEnemy in enemies) {
+			bool[] adjacentEntities = new bool[4];
+			adjacentEntities [0] = CheckCollision (currentEnemy.GetPosition () [0] - 1, currentEnemy.GetPosition () [1]);
+			adjacentEntities [1] = CheckCollision (currentEnemy.GetPosition () [0], currentEnemy.GetPosition () [1] + 1);
+			adjacentEntities [2] = CheckCollision (currentEnemy.GetPosition () [0] + 1, currentEnemy.GetPosition () [1]);
+			adjacentEntities [3] = CheckCollision (currentEnemy.GetPosition () [0], currentEnemy.GetPosition () [1] - 1);
+			currentEnemy.UpdateAdjacentEntities (adjacentEntities);
+		}
+	}
+
+	public bool CheckCollision (int x, int y) {
+		foreach (NPCManager currentEnemy in enemies) {
+			if (currentEnemy.CheckCollision(x, y) || (x == playerX && y == playerY))
+				return true;
 		}
 		return false;
 	}

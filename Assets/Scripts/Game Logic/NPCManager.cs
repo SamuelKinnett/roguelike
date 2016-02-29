@@ -27,6 +27,7 @@ public class NPCManager : MonoBehaviour
 	int movementPathPosition;
 	int pathDistance;
 	int distanceToPlayer;
+	bool[] adjacentEntities = new bool[4];
 
 
 	// Use this for initialization
@@ -78,7 +79,10 @@ public class NPCManager : MonoBehaviour
 	{
 		int damageDone = playerStats [(int)Stats.attack] - stats [(int)Stats.armour];
 		stats [(int)Stats.hp] -= damageDone;
+		Debug.Log("Enemy hit for " + damageDone + " damage.");
 		if (stats [(int)Stats.hp] < 1) {
+			Debug.Log ("Enemy Killed!");
+			DestroyNPC();
 			return true;
 		}
 		return false;
@@ -101,6 +105,31 @@ public class NPCManager : MonoBehaviour
 		tempTransform.y = y * spriteRenderer.bounds.size.y;
 		tempTransform.z = -1;
 		worldNPC.transform.position = tempTransform;
+
+		switch (mapManager.GetTile(x, y).visibility) {
+
+		case TileVisibility.seen:
+			//The tile has previously been seen, but is now not visible,
+			//so tint it to be darker
+			spriteRenderer.color = new Color (0.2f, 0.2f, 0.2f);
+			spriteRenderer.enabled = false;
+			break;
+
+		case TileVisibility.unseen:
+			//For whatever reason, the tile is now unknown to the player.
+			//Make it invisible.
+			spriteRenderer.enabled = false;
+			break;
+
+		case TileVisibility.visible:
+			//The tile is currently visible, apply tinting based on the intensity
+			// value.
+			spriteRenderer.color = new Color (mapManager.GetTile(x, y).intensity,
+				mapManager.GetTile(x, y).intensity,
+				mapManager.GetTile(x, y).intensity);
+			spriteRenderer.enabled = true;
+			break;
+		}
 	}
 
 	#region movement
@@ -112,6 +141,49 @@ public class NPCManager : MonoBehaviour
 	/// <param name="playerY">Player y.</param>
 	public void Move (int playerX, int playerY)
 	{
+		if (movementPath == null) {
+			if (playerX >= (x - visualRadius) && playerX <= (x + visualRadius) && playerY >= (y - visualRadius) && playerY <= (y + visualRadius)) {
+				Pathfind (playerX, playerY);
+			} else {
+				int[] newTarget = mapManager.GetRandomPosition ();
+				Pathfind (newTarget [0], newTarget [1]);
+			}
+		}
+
+		if (playerX >= (x - visualRadius) && playerX <= (x + visualRadius) && playerY >= (y - visualRadius) && playerY <= (y + visualRadius)) {
+			Pathfind (playerX, playerY);
+		}
+
+		if (movementPathPosition + 1 < pathDistance) {
+			++movementPathPosition;
+			int newX = movementPath [movementPathPosition] [0];
+			int newY = movementPath [movementPathPosition] [1];
+
+			if (!adjacentEntities [0]
+				&& !adjacentEntities [2]
+				&& !adjacentEntities [3]
+				&& !adjacentEntities [1]) {
+				x = newX;
+				y = newY;
+			} else {
+				if (playerX >= (x - visualRadius) && playerX <= (x + visualRadius) && playerY >= (y - visualRadius) && playerY <= (y + visualRadius)) {
+					Pathfind (playerX, playerY);
+				} else {
+					int[] newTarget = mapManager.GetRandomPosition ();
+					Pathfind (newTarget [0], newTarget [1]);
+				}
+			}
+			UpdateWorldPosition ();
+		} else {
+			if (playerX >= (x - visualRadius) && playerX <= (x + visualRadius) && playerY >= (y - visualRadius) && playerY <= (y + visualRadius)) {
+				Pathfind (playerX, playerY);
+			} else {
+				int[] newTarget = mapManager.GetRandomPosition ();
+				Pathfind (newTarget [0], newTarget [1]);
+			}
+		}
+			
+		/* James' code
 		//visual detection
 		if (playerX >= (x - visualRadius) && playerX <= (x + visualRadius) && playerY >= (y - visualRadius) && playerY <= (y + visualRadius)) {
 			int[] position = Movement (playerX, playerY);//returns int[] of movment position
@@ -121,9 +193,10 @@ public class NPCManager : MonoBehaviour
 				UpdateWorldPosition ();
 			}
 		}
+		*/
 	}
 
-	int[] Pathfind (int targetX, int targetY)
+	void Pathfind (int targetX, int targetY)
 	{
 		List<int[]> openList = new List<int[]> ();
 		List<int[]> closedList = new List<int[]> ();
@@ -133,7 +206,7 @@ public class NPCManager : MonoBehaviour
 		int H;
 		int openListEntryNumber;
 		int closedListEntryNumber;
-		int parentID;
+		int parentID = 0;
 		int desiredID;
 		bool canMove;
 
@@ -159,7 +232,9 @@ public class NPCManager : MonoBehaviour
 		closedListEntryNumber = 0;
 		G = 10;
 
-		while ((currentX != targetX) || (currentY != targetY)) {
+		int breakout = 0;
+
+		while (((currentX != targetX) && (currentY != targetY)) && breakout < 20) {
 
 			canMove = false;
 
@@ -178,8 +253,8 @@ public class NPCManager : MonoBehaviour
 				}
 			}
 
-			if (solidMap [CurrentX - 1, CurrentY] != 1) {
-				if (visitedSquares [CurrentX - 1, CurrentY] == 0) {
+			if (!mapManager.GetTile (currentX - 1, currentY).solid) {
+				if (visitedSquares [currentX - 1, currentY] == 0) {
 					openListEntryNumber += 1;
 					int[] openListEntry = new int[4];
 					openListEntry [0] = currentX - 1;
@@ -189,12 +264,12 @@ public class NPCManager : MonoBehaviour
 					F = G + H;
 					openListEntry [3] = F;
 					openList.Add (openListEntry);
-					canMove = True;
+					canMove = true;
 				}
 			}
 
-			if (solidMap [CurrentX, CurrentY + 1] != 1) {
-				if (visitedSquares [CurrentX, CurrentY + 1] == 0) {
+			if (!mapManager.GetTile (currentX, currentY + 1).solid) {
+				if (visitedSquares [currentX, currentY + 1] == 0) {
 					openListEntryNumber += 1;
 					int[] openListEntry = new int[4];
 					openListEntry [0] = currentX;
@@ -204,12 +279,12 @@ public class NPCManager : MonoBehaviour
 					F = G + H;
 					openListEntry [3] = F;
 					openList.Add (openListEntry);
-					canMove = True;
+					canMove = true;
 				}
 			}
 
-			if (solidMap [CurrentX, CurrentY - 1] != 1) {
-				if (visitedSquares [CurrentX, CurrentY - 1] == 0) {
+			if (!mapManager.GetTile (currentX, currentY - 1).solid) {
+				if (visitedSquares [currentX, currentY - 1] == 0) {
 					openListEntryNumber += 1;
 					int[] openListEntry = new int[4];
 					openListEntry [0] = currentX;
@@ -219,7 +294,7 @@ public class NPCManager : MonoBehaviour
 					F = G + H;
 					openListEntry [3] = F;
 					openList.Add (openListEntry);
-					canMove = True;
+					canMove = true;
 				}
 			}
 
@@ -250,14 +325,16 @@ public class NPCManager : MonoBehaviour
 			visitedSquares [currentX, currentY] = 1;
 
 			openListEntryNumber = -1;
+			++breakout;
 		}
 
 		int[] movementPathEntry = new int[2];
 
 		for (int count = 0; count <= closedListEntryNumber; ++count) {
-			movementPathEntry [count] [0] = closedList [count] [0];
-			movementPathEntry [count] [1] = closedList [count] [1];
-			pathDistance += 1;
+			movementPathEntry [0] = closedList [count] [0];
+			movementPathEntry [1] = closedList [count] [1];
+			movementPath.Add (movementPathEntry);
+			++pathDistance;
 		}
 
 		movementPathPosition = 0;
@@ -362,4 +439,12 @@ public class NPCManager : MonoBehaviour
 
 	#endregion movement
 
+	public bool CheckCollision(int testX, int testY) {
+		return ((x == testX) && (y == testY));
+	}
+
+	//Updates the adjacentEntities array, allowing the npc to check if movement is possible
+	public void UpdateAdjacentEntities(bool[] adjacentEntities) {
+		this.adjacentEntities = adjacentEntities;
+	}
 }
