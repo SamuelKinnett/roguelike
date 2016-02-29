@@ -22,6 +22,12 @@ public class NPCManager : MonoBehaviour
 	int y;
 	//y co-ordinate
 
+	//Temporary Pathfinding Variables
+	List<int[]> movementPath;
+	int movementPathPosition;
+	int pathDistance;
+	int distanceToPlayer;
+
 
 	// Use this for initialization
 	void Start ()
@@ -68,7 +74,8 @@ public class NPCManager : MonoBehaviour
 		return false;
 	}
 
-	public bool NPCHit(int[] playerStats) {
+	public bool NPCHit (int[] playerStats)
+	{
 		int damageDone = playerStats [(int)Stats.attack] - stats [(int)Stats.armour];
 		stats [(int)Stats.hp] -= damageDone;
 		if (stats [(int)Stats.hp] < 1) {
@@ -82,8 +89,9 @@ public class NPCManager : MonoBehaviour
 		return stats;
 	}
 
-	public int[] GetPosition() {
-		return new int[2]{x, y};
+	public int[] GetPosition ()
+	{
+		return new int[2]{ x, y };
 	}
 
 	void UpdateWorldPosition ()
@@ -115,10 +123,152 @@ public class NPCManager : MonoBehaviour
 		}
 	}
 
+	int[] Pathfind (int targetX, int targetY)
+	{
+		List<int[]> openList = new List<int[]> ();
+		List<int[]> closedList = new List<int[]> ();
+		int[,] visitedSquares = new int[mapManager.mapWidth, mapManager.mapHeight];
+		int F;
+		int G;
+		int H;
+		int openListEntryNumber;
+		int closedListEntryNumber;
+		int parentID;
+		int desiredID;
+		bool canMove;
+
+		int currentX;
+		int currentY;
+
+		currentX = x;
+		currentY = y;
+
+		movementPath = new List<int[]> ();
+
+		pathDistance = 0;
+
+		visitedSquares [currentX, currentY] = 1;
+
+		int[] newEntry = new int[2];
+		newEntry [0] = currentX;
+		newEntry [1] = currentY;
+
+		closedList.Add (newEntry);
+
+		openListEntryNumber = -1;
+		closedListEntryNumber = 0;
+		G = 10;
+
+		while ((currentX != targetX) || (currentY != targetY)) {
+
+			canMove = false;
+
+			if (!mapManager.GetTile (currentX + 1, currentY).solid) {
+				if (visitedSquares [currentX + 1, currentY] == 0) {
+					openListEntryNumber += 1;
+					int[] openListEntry = new int[4];
+					openListEntry [0] = currentX + 1;
+					openListEntry [1] = currentY;
+					openListEntry [2] = parentID;
+					H = Mathf.Abs ((currentX + 1) - targetX) + Mathf.Abs (currentY - targetY);
+					F = G + H;
+					openListEntry [3] = F;
+					openList.Add (openListEntry);
+					canMove = true;
+				}
+			}
+
+			if (solidMap [CurrentX - 1, CurrentY] != 1) {
+				if (visitedSquares [CurrentX - 1, CurrentY] == 0) {
+					openListEntryNumber += 1;
+					int[] openListEntry = new int[4];
+					openListEntry [0] = currentX - 1;
+					openListEntry [1] = currentY;
+					openListEntry [2] = parentID;
+					H = Mathf.Abs ((currentX - 1) - targetX) + Mathf.Abs (currentY - targetY);
+					F = G + H;
+					openListEntry [3] = F;
+					openList.Add (openListEntry);
+					canMove = True;
+				}
+			}
+
+			if (solidMap [CurrentX, CurrentY + 1] != 1) {
+				if (visitedSquares [CurrentX, CurrentY + 1] == 0) {
+					openListEntryNumber += 1;
+					int[] openListEntry = new int[4];
+					openListEntry [0] = currentX;
+					openListEntry [1] = currentY + 1;
+					openListEntry [2] = parentID;
+					H = Mathf.Abs (currentX - targetX) + Mathf.Abs ((currentY + 1) - targetY);
+					F = G + H;
+					openListEntry [3] = F;
+					openList.Add (openListEntry);
+					canMove = True;
+				}
+			}
+
+			if (solidMap [CurrentX, CurrentY - 1] != 1) {
+				if (visitedSquares [CurrentX, CurrentY - 1] == 0) {
+					openListEntryNumber += 1;
+					int[] openListEntry = new int[4];
+					openListEntry [0] = currentX;
+					openListEntry [1] = currentY - 1;
+					openListEntry [2] = parentID;
+					H = Mathf.Abs (currentX - targetX) + Mathf.Abs ((currentY - 1) - targetY);
+					F = G + H;
+					openListEntry [3] = F;
+					openList.Add (openListEntry);
+					canMove = True;
+				}
+			}
+
+			if (!canMove) {
+				break;
+			}
+
+			desiredID = 0;
+
+			for (int count = 0; count <= openListEntryNumber; ++count) {
+				if (openList [count] [3] < openList [desiredID] [3]) {
+					desiredID = count;
+				}
+			}
+
+			closedListEntryNumber += 1;
+
+			int[] closedListEntry = new int[2];
+
+			closedListEntry [0] = openList [desiredID] [0];
+			closedListEntry [1] = openList [desiredID] [1];
+
+			closedList.Add (closedListEntry);
+
+			currentX = openList [desiredID] [0];
+			currentY = openList [desiredID] [1];
+
+			visitedSquares [currentX, currentY] = 1;
+
+			openListEntryNumber = -1;
+		}
+
+		int[] movementPathEntry = new int[2];
+
+		for (int count = 0; count <= closedListEntryNumber; ++count) {
+			movementPathEntry [count] [0] = closedList [count] [0];
+			movementPathEntry [count] [1] = closedList [count] [1];
+			pathDistance += 1;
+		}
+
+		movementPathPosition = 0;
+
+		distanceToPlayer = pathDistance;
+	}
+
 	public int[] Movement (int playerX, int playerY)
 	{
 		//A* psudocode -> http://web.mit.edu/eranki/www/tutorials/search/
-		Node npc = new Node();
+		Node npc = new Node ();
 		npc.Initilise (x, y, 0, 0, 0);
 		Node q = npc;
 

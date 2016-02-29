@@ -167,4 +167,9 @@ public class GameController : MonoBehaviour
 	{
 		paused = true;
 	}
+
+	public int GetCurrentFloor ()
+	{
+		return currentFloor;
+	}
 }

@@ -1,26 +1,14 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Game Logic/EntityManager.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Game Logic\NPCManager.cs">
     <Files>
-      <File FileName="Assets/Scripts/Game Logic/PlayerController.cs" Line="56" Column="3" />
-      <File FileName="Assets/Scripts/Game Logic/EntityManager.cs" Line="149" Column="6" />
-      <File FileName="Assets/Scripts/Game Logic/NPCManager.cs" Line="18" Column="2" />
+      <File FileName="Assets\Scripts\Game Logic\NPCManager.cs" Line="170" Column="39" />
+      <File FileName="Assets\Scripts\GUI\GameGUIController.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Game Logic\PlayerController.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Game Logic\EntityManager.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Game Logic\GameController.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Game Logic\MapManager.cs" Line="18" Column="23" />
     </Files>
-    <Pads>
-      <Pad Id="ProjectPad">
-        <State name="__root__">
-          <Node name="roguelike" expanded="True">
-            <Node name="Assembly-CSharp" expanded="True">
-              <Node name="Scripts" expanded="True">
-                <Node name="Game Logic" expanded="True">
-                  <Node name="EntityManager.cs" selected="True" />
-                </Node>
-              </Node>
-            </Node>
-          </Node>
-        </State>
-      </Pad>
-    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
