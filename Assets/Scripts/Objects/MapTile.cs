@@ -16,6 +16,7 @@ public struct TileInfo
 	public bool stairsUp;
 	public bool stairsDown;
 	public TileVisibility visibility;
+	public float intensity;
 }
 
 public class MapTile : ScriptableObject
@@ -94,7 +95,7 @@ public class MapTile : ScriptableObject
 		info.stairsDown = stairsDown;
 	}
 
-	public void SetVisibility (TileVisibility visibility, float intensity = 1.0f)
+	public void SetVisibility (TileVisibility visibility)
 	{
 		info.visibility = visibility;
 
@@ -117,12 +118,16 @@ public class MapTile : ScriptableObject
 			case TileVisibility.visible:
 				//The tile is currently visible, apply tinting based on the intensity
 				// value.
-				worldTile.GetComponent<SpriteRenderer> ().color = new Color (intensity, intensity, intensity);
+				worldTile.GetComponent<SpriteRenderer> ().color = new Color (info.intensity, info.intensity, info.intensity);
 				worldTile.GetComponent<SpriteRenderer> ().enabled = true;
 				break;
 			}
 			oldVisibility = info.visibility;
 		}
+	}
+
+	public void SetLightIntensity(float intensity) {
+		info.intensity = intensity;
 	}
 
 	public TileInfo GetInfo ()

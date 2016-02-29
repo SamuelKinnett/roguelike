@@ -1,11 +1,23 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+public enum Stats
+{
+	attack,
+	armour,
+	magicAttack,
+	magicArmour,
+	hp,
+	agility
+}
+
 public class PlayerController : MonoBehaviour
 {
 
 	public SpriteRenderer spriteRenderer;
 	private float worldWidth, worldHeight;
+
+	int[] playerStats = new int[6];
 
 	// Use this for initialization
 	void Start ()
@@ -13,6 +25,11 @@ public class PlayerController : MonoBehaviour
 		spriteRenderer = this.GetComponent<SpriteRenderer> ();
 		worldWidth = spriteRenderer.bounds.size.x;
 		worldHeight = spriteRenderer.bounds.size.y;
+
+		for (int i = 0; i < playerStats.Length; i++) {
+			playerStats [i] = 10; //Temporary set value of all stats for testing TODO: Change to 0
+		}
+		playerStats [(int)Stats.hp] = 25; //Sets starting HP for character to 25
 	}
 	
 	// Update is called once per frame
@@ -34,4 +51,30 @@ public class PlayerController : MonoBehaviour
 		this.transform.position = tempTrans;
 	}
 
+	//Function for retieving (All) player stats
+	public int[] GetAllPlayerStats ()
+	{
+		return playerStats;
+	}
+
+	public int GetStat (Stats stat)
+	{
+		return playerStats [(int)stat];
+	}
+
+	//Called when the player is hit with an attack. All calculation goes here.
+	// Return true if the player is killed.
+	public bool PlayerHit (int[] enemyStats)
+	{
+		int damageDone = enemyStats [(int)Stats.attack] - playerStats [(int)Stats.armour];
+		if (damageDone < 1)
+			damageDone = 1;
+		playerStats [(int)Stats.hp] -= damageDone;
+		Debug.Log ("Player hit for " + damageDone + " damage!");
+		if (playerStats [(int)Stats.hp] < 1) {
+			Debug.Log ("Player killed!");
+			return true;
+		}
+		return false;
+	}
 }
