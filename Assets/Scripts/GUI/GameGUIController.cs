@@ -28,6 +28,6 @@ public class GameGUIController : MonoBehaviour
 	void Update ()
 	{
 		currentLevelText.text = "Floor " + (gameController.GetCurrentFloor () + 1);
-		currentHealthText.text = "HP: " + playerController.GetStat (Stats.hp);
+		currentHealthText.text = "HP: " + playerController.GetAllPlayerStats().hp;
 	}
 }
