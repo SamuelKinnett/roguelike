@@ -14,7 +14,6 @@ public enum directions
 public class EntityManager : MonoBehaviour
 {
 
-
 	public GameObject obj_MapManager;
 	public GameObject obj_Player;
 
@@ -53,14 +52,14 @@ public class EntityManager : MonoBehaviour
 		int numberOfEnemies = (int)(5 * Random.value + 1);	//Generate between 1 and 6 (both inclusive) enemies
 		enemies = new List<NPCManager> ();
 
-		//Temporary placeholder stats
-		int[] tempStats = new int[6];
-		tempStats [(int)Stats.agility] = 4;
-		tempStats [(int)Stats.armour] = 2;
-		tempStats [(int)Stats.attack] = 4;
-		tempStats [(int)Stats.hp] = 10;
-		tempStats [(int)Stats.magicArmour] = 0;
-		tempStats [(int)Stats.magicAttack] = 0;
+        //Temporary placeholder stats
+        NPCManager.stats tempStats = new NPCManager.stats();
+        tempStats.agility = 4;
+        tempStats.armour = 2;
+        tempStats.hp = 10;
+        tempStats.strength = 4;
+        tempStats.wisdom = 0;
+		
 
 		for (int curEnemy = 0; curEnemy < numberOfEnemies; curEnemy++) {
 			enemies.Add (new NPCManager ());
@@ -79,7 +78,7 @@ public class EntityManager : MonoBehaviour
 		bool playerKilled = false;
 		foreach (NPCManager curNPC in enemies) {
 			if (curNPC.CanAttack (playerX, playerY)) {
-				playerKilled = (EnemyAttackPlayer (curNPC.GetStats ()));
+				playerKilled = (EnemyAttackPlayer (curNPC.GetAllEnemyStats()));
 			} else {
 				curNPC.Move (playerX, playerY);
 			}
@@ -218,12 +217,12 @@ public class EntityManager : MonoBehaviour
 	/// </summary>
 	/// <returns><c>true</c>, if attack player was enemyed, <c>false</c> otherwise.</returns>
 	/// <param name="enemyStats">Enemy stats.</param>
-	public bool EnemyAttackPlayer (int[] enemyStats)
+	public bool EnemyAttackPlayer (NPCManager.stats enemyStats)
 	{
 		return (playerController.PlayerHit (enemyStats));
 	}
 
-	public bool PlayerAttackEnemy (int[] playerStats, int enemyIndex)
+	public bool PlayerAttackEnemy (PlayerController.stats playerStats, int enemyIndex)
 	{
 		if (enemies [enemyIndex].NPCHit (playerStats)) {
 			enemies.RemoveAt (enemyIndex);
