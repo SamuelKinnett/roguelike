@@ -28,6 +28,7 @@ public class NPCManager : MonoBehaviour
     //Main structure that holds the NPC's stats
 
     int visualRadius;
+    //how far npc can see
     int x;
     //x co-ordinate
     int y;
@@ -187,6 +188,7 @@ public class NPCManager : MonoBehaviour
     /// <param name="playerY">Player y.</param>
     public void Move(int playerX, int playerY)
     {
+        /*
         if (movementPath == null)
         {
             if (playerX >= (x - visualRadius) && playerX <= (x + visualRadius) && playerY >= (y - visualRadius) && playerY <= (y + visualRadius))
@@ -245,10 +247,11 @@ public class NPCManager : MonoBehaviour
                 Pathfind(newTarget[0], newTarget[1]);
             }
         }
-
-        /* James' code
+        */
+        //* James' code
 		//visual detection
-		if (playerX >= (x - visualRadius) && playerX <= (x + visualRadius) && playerY >= (y - visualRadius) && playerY <= (y + visualRadius)) {
+		if (playerX >= (x - visualRadius) && playerX <= (x + visualRadius) && playerY >= (y - visualRadius) && playerY <= (y + visualRadius))
+        {
 			int[] position = Movement (playerX, playerY);//returns int[] of movment position
 			if (position != null) {
 				x = position [0];
@@ -256,9 +259,183 @@ public class NPCManager : MonoBehaviour
 				UpdateWorldPosition ();
 			}
 		}
-		*/
+		//*/
+    }
+    //James' new A* pathfinding
+
+    public int[] Movement(int playerX, int playerY)
+    {
+        //A* psudocode -> http://web.mit.edu/eranki/www/tutorials/search/
+
+        List<int[]> openL = new List<int[]>();//list of nodes to check
+        List<int[]> closeL = new List<int[]>();//list of checked nodes
+        int index = 0;
+        int[] noChange = new int[2];
+        noChange[0] = x;
+        noChange[1] = y;
+        int[] startNode = new int[7];
+        startNode[0] = 0;//0 is index
+        startNode[1] = x;//1 is x
+        startNode[2] = y;//2 is y
+        startNode[3] = 0;//3 is parent
+        startNode[4] = 0;//4 is movement count g
+        startNode[5] = 0;//5 is h
+        startNode[6] = 0;//7 is f
+        int[] q = startNode;
+        openL.Add(startNode);//add start node
+
+        while (openL.Count > 0)//nodes to search
+        {
+            float qf = 100;
+
+            foreach (int[] n in openL)
+            {
+                if (qf > n[5])
+                {
+                    qf = n[5];
+                    q = n;
+                    index = openL.IndexOf(n);
+                }
+            }
+            openL.RemoveAt(index);
+            closeL.Add(q);
+
+            int[] lNode = new int[7];
+            lNode = closeL[closeL.Count - 1];
+            //PrintList(openL, "openRemoved");
+            if (q[1] == playerX && q[2] == playerY)//check if route is found
+            {
+                Debug.Log("Found path");
+
+                foreach (int[] n in closeL)
+                {
+                    Debug.Log("Node list:" + n[1] + " " + n[2]);
+                }
+
+                //return noChange;
+
+                int parent = lNode[3];
+                //Console.WriteLine("LAst node Node list:" + lNode[1] + " " + lNode[2]);
+                int[] temp = reconstruct_path(closeL, parent);
+                Debug.Log("Return:" + temp[0] + " " + temp[1]);
+                return temp;
+            }
+            //Console.WriteLine("Q:" + q[1] + " " + q[2]);
+            //search routes
+            //up
+            int tempX = q[1];
+            int tempY = q[2];
+            int addToIndex = 1;
+            //if (!mapManager.GetTile(tempX, (tempY + 1)).solid)
+            //if (tempY + 1 < 19)
+            {
+                openL = successorNode(q, tempX, (tempY + 1), playerX, playerY, openL, closeL, lNode[0] + addToIndex);
+                addToIndex++;
+            }
+            foreach (int[] n in openL)
+            {
+                //Console.WriteLine("open list:" + n[1] + " " + n[2]);
+            }
+            //PrintList(openL, "open");
+
+            //down
+            //if (!mapManager.GetTile(tempX, (tempY - 1)).solid)
+            //if (tempY - 1 >= 0)
+            {
+                openL = successorNode(q, tempX, (tempY - 1), playerX, playerY, openL, closeL, lNode[0] + addToIndex);
+                addToIndex++;
+            }
+            //PrintList(openL, "open");
+            //left
+            //if (!mapManager.GetTile((tempY + 1), tempY).solid)
+            //if (tempX + 1 < 19)
+            {
+                openL = successorNode(q, (tempX + 1), tempY, playerX, playerY, openL, closeL, lNode[0] + addToIndex);
+                addToIndex++;
+            }
+            //PrintList(openL, "open");
+            //right
+            //if (!mapManager.GetTile((tempX - 1), tempY).solid)
+            //if (tempX - 1 >= 0)
+            {
+                openL = successorNode(q, (tempX - 1), tempY, playerX, playerY, openL, closeL, lNode[0] + addToIndex);
+                addToIndex++;
+            }
+            //PrintList(openL, "open");
+
+
+            //PrintList(closeL, "close");
+            //map[q.GetX(), q.GetY()] = "S";
+            //printMap();
+        }
+
+        return noChange;
     }
 
+    int[] reconstruct_path(List<int[]> path, int index)
+    {
+        int[] temp = new int[2];
+        temp[0] = 0;
+        temp[1] = 0;
+
+        foreach (int[] n in path)
+        {
+
+            if (n[0] == index)
+            {
+                Debug.Log("Node " + n[0] + " reconstruct:" + n[1] + " " + n[2] + " Parent node " + n[3]);
+                temp[0] = n[1];
+                temp[1] = n[2];
+                if (n[4] > 1)
+                {
+                    temp = reconstruct_path(path, n[3]);
+                }
+            }
+        }
+
+
+        return temp;
+    }
+
+    List<int[]> successorNode(int[] q, int x, int y, int targetX, int targetY, List<int[]> openL, List<int[]> closeL, int newIndex)
+    {
+        bool openList = false;
+        bool closeList = false;
+
+        int[] successsor = new int[8];
+        successsor[0] = newIndex;//0 is index
+        successsor[1] = x;//1 is x
+        successsor[2] = y;//2 is y
+        successsor[3] = q[0];//3 is parent
+        successsor[4] = q[4] + 1;//4 is movement count g
+        successsor[5] = Mathf.Abs(successsor[1] - targetX) + Mathf.Abs(successsor[2] - targetY); //5 is h
+        successsor[6] = successsor[4] + successsor[5];//7 is f
+
+        Debug.Log("S:" + successsor[1] + " " + successsor[2]);
+        foreach (int[] o in openL)
+        {
+            if (o[1] == successsor[1] && o[2] == successsor[2] && o[6] < successsor[6])
+            {
+                openList = true;
+            }
+        }
+        foreach (int[] o in closeL)
+        {
+            if (o[1] == successsor[1] && o[2] == successsor[2] && o[6] < successsor[6])
+            {
+                closeList = true;
+            }
+        }
+        if (openList || closeList)
+        {
+        }
+        else
+        {
+            openL.Add(successsor);
+        }
+        return openL;
+    }
+    //Sam's pathfinding
     void Pathfind(int targetX, int targetY)
     {
         List<int[]> openList = new List<int[]>();
@@ -417,8 +594,8 @@ public class NPCManager : MonoBehaviour
 
         distanceToPlayer = pathDistance;
     }
-
-    public int[] Movement(int playerX, int playerY)
+    //James' old pathfinding
+    public int[] Movements(int playerX, int playerY)
     {
         //A* psudocode -> http://web.mit.edu/eranki/www/tutorials/search/
         Node npc = new Node();
