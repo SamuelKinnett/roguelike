@@ -198,11 +198,10 @@ public class NPCManager : MonoBehaviour
 			//Pathfind to a random position on the map
 			UpdateWorldPosition ();
 		}
-		//*/
     }
     //James' new A* pathfinding
 
-    public int[] Movement(int playerX, int playerY)
+    public int[] Movement(int targetX, int targetY)
     {
         //A* psudocode -> http://web.mit.edu/eranki/www/tutorials/search/
 
@@ -226,7 +225,7 @@ public class NPCManager : MonoBehaviour
         while (openL.Count > 0)//nodes to search
         {
             float qf = 100;
-
+            //find the node for path
             foreach (int[] n in openL)
             {
                 if (qf > n[5])
@@ -241,76 +240,46 @@ public class NPCManager : MonoBehaviour
 
             int[] lNode = new int[7];
             lNode = closeL[closeL.Count - 1];
-            //PrintList(openL, "openRemoved");
-            if (q[1] == playerX && q[2] == playerY)//check if route is found
+            
+            if (q[1] == targetX && q[2] == targetY)//check if path is found to end
             {
-                Debug.Log("Found path");
-
-                foreach (int[] n in closeL)
-                {
-                    Debug.Log("Node list:" + n[1] + " " + n[2]);
-                }
-
-                //return noChange;
-
                 int parent = lNode[3];
-                //Console.WriteLine("LAst node Node list:" + lNode[1] + " " + lNode[2]);
                 int[] temp = reconstruct_path(closeL, parent);
-                Debug.Log("Return:" + temp[0] + " " + temp[1]);
                 return temp;
             }
-            //Console.WriteLine("Q:" + q[1] + " " + q[2]);
+            
             //search routes
-            //up
             int tempX = q[1];
             int tempY = q[2];
-            int addToIndex = 1;
-            
-			//if (mapManager.GetTile(tempX, tempY + 1) != null)
-			if (!mapManager.GetTile(tempX, (tempY + 1)).solid)
-            //if (tempY + 1 < 19)
+            int addToIndex = 1;//added to give the index of node
+
+            //up
+            if (!mapManager.GetTile(tempX, (tempY + 1)).solid)
             {
-                openL = successorNode(q, tempX, (tempY + 1), playerX, playerY, openL, closeL, lNode[0] + addToIndex);
+                openL = successorNode(q, tempX, (tempY + 1), targetX, targetY, openL, closeL, lNode[0] + addToIndex);
                 addToIndex++;
             }
-            foreach (int[] n in openL)
-            {
-                //Console.WriteLine("open list:" + n[1] + " " + n[2]);
-            }
-            //PrintList(openL, "open");
 
             //down
-			//if (mapManager.GetTile(tempX, tempY - 1) != null)
 			if (!mapManager.GetTile(tempX, (tempY - 1)).solid)
-            //if (tempY - 1 >= 0)
             {
-                openL = successorNode(q, tempX, (tempY - 1), playerX, playerY, openL, closeL, lNode[0] + addToIndex);
+                openL = successorNode(q, tempX, (tempY - 1), targetX, targetY, openL, closeL, lNode[0] + addToIndex);
                 addToIndex++;
             }
-            //PrintList(openL, "open");
+
             //left
-			//if (mapManager.GetTile(tempX + 1, tempY) != null)
             if (!mapManager.GetTile((tempX + 1), tempY).solid)
-            //if (tempX + 1 < 19)
             {
-                openL = successorNode(q, (tempX + 1), tempY, playerX, playerY, openL, closeL, lNode[0] + addToIndex);
+                openL = successorNode(q, (tempX + 1), tempY, targetX, targetY, openL, closeL, lNode[0] + addToIndex);
                 addToIndex++;
             }
-            //PrintList(openL, "open");
+
             //right
-			//if (mapManager.GetTile(tempX - 1, tempY) != null)
             if (!mapManager.GetTile((tempX - 1), tempY).solid)
-            //if (tempX - 1 >= 0)
             {
-                openL = successorNode(q, (tempX - 1), tempY, playerX, playerY, openL, closeL, lNode[0] + addToIndex);
+                openL = successorNode(q, (tempX - 1), tempY, targetX, targetY, openL, closeL, lNode[0] + addToIndex);
                 addToIndex++;
             }
-            //PrintList(openL, "open");
-
-
-            //PrintList(closeL, "close");
-            //map[q.GetX(), q.GetY()] = "S";
-            //printMap();
         }
 
         return noChange;
@@ -318,27 +287,26 @@ public class NPCManager : MonoBehaviour
 
     int[] reconstruct_path(List<int[]> path, int index)
     {
-        int[] temp = new int[2];
-        temp[0] = 0;
-        temp[1] = 0;
+        int[] returnXY = new int[2];
+        returnXY[0] = 0;
+        returnXY[1] = 0;
 
         foreach (int[] n in path)
         {
-
             if (n[0] == index)
             {
                 Debug.Log("Node " + n[0] + " reconstruct:" + n[1] + " " + n[2] + " Parent node " + n[3]);
-                temp[0] = n[1];
-                temp[1] = n[2];
+                returnXY[0] = n[1];
+                returnXY[1] = n[2];
                 if (n[4] > distance)
                 {
-                    temp = reconstruct_path(path, n[3]);
+                    returnXY = reconstruct_path(path, n[3]);
                 }
             }
         }
 
 
-        return temp;
+        return returnXY;
     }
 
     List<int[]> successorNode(int[] q, int x, int y, int targetX, int targetY, List<int[]> openL, List<int[]> closeL, int newIndex)
