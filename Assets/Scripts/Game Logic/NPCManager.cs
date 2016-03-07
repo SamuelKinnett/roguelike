@@ -27,15 +27,12 @@ public class NPCManager : MonoBehaviour
 
     //Main structure that holds the NPC's stats
 
-    int visualRadius;
-    //how far npc can see
-    int x;
-    //x co-ordinate
-    int y;
-    //y co-ordinate
+    int visualRadius; //how far npc can see
+    int distance = 2; //distance npc can travel
+    int x;//x co-ordinate
+    int y; //y co-ordinate
 
     bool[] adjacentEntities = new bool[4];
-
 
     // Use this for initialization
     void Start()
@@ -333,7 +330,7 @@ public class NPCManager : MonoBehaviour
                 Debug.Log("Node " + n[0] + " reconstruct:" + n[1] + " " + n[2] + " Parent node " + n[3]);
                 temp[0] = n[1];
                 temp[1] = n[2];
-                if (n[4] > 1)
+                if (n[4] > distance)
                 {
                     temp = reconstruct_path(path, n[3]);
                 }
