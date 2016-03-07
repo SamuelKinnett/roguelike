@@ -34,11 +34,6 @@ public class NPCManager : MonoBehaviour
     int y;
     //y co-ordinate
 
-    //Temporary Pathfinding Variables
-    List<int[]> movementPath;
-    int movementPathPosition;
-    int pathDistance;
-    int distanceToPlayer;
     bool[] adjacentEntities = new bool[4];
 
 
@@ -70,6 +65,7 @@ public class NPCManager : MonoBehaviour
     public void DestroyNPC()
     {
         Destroy(worldNPC);
+		Destroy (this);
     }
 
     /// <summary>
@@ -110,6 +106,7 @@ public class NPCManager : MonoBehaviour
                 if (enemyStats.hp < 1)
                 {
                     Debug.Log("Enemy is dead!");
+					DestroyNPC ();
                     return true;
                 }
                 else
@@ -124,6 +121,7 @@ public class NPCManager : MonoBehaviour
                 if (enemyStats.hp < 1)
                 {
                     Debug.Log("Enemy is dead!");
+					DestroyNPC ();
                     return true;
                 }
                 else
@@ -188,76 +186,20 @@ public class NPCManager : MonoBehaviour
     /// <param name="playerY">Player y.</param>
     public void Move(int playerX, int playerY)
     {
-        /*
-        if (movementPath == null)
-        {
-            if (playerX >= (x - visualRadius) && playerX <= (x + visualRadius) && playerY >= (y - visualRadius) && playerY <= (y + visualRadius))
-            {
-                Pathfind(playerX, playerY);
-            }
-            else
-            {
-                int[] newTarget = mapManager.GetRandomPosition();
-                Pathfind(newTarget[0], newTarget[1]);
-            }
-        }
-
-        if (playerX >= (x - visualRadius) && playerX <= (x + visualRadius) && playerY >= (y - visualRadius) && playerY <= (y + visualRadius))
-        {
-            Pathfind(playerX, playerY);
-        }
-
-        if (movementPathPosition + 1 < pathDistance)
-        {
-            ++movementPathPosition;
-            int newX = movementPath[movementPathPosition][0];
-            int newY = movementPath[movementPathPosition][1];
-
-            if (!adjacentEntities[0]
-                && !adjacentEntities[2]
-                && !adjacentEntities[3]
-                && !adjacentEntities[1])
-            {
-                x = newX;
-                y = newY;
-            }
-            else
-            {
-                if (playerX >= (x - visualRadius) && playerX <= (x + visualRadius) && playerY >= (y - visualRadius) && playerY <= (y + visualRadius))
-                {
-                    Pathfind(playerX, playerY);
-                }
-                else
-                {
-                    int[] newTarget = mapManager.GetRandomPosition();
-                    Pathfind(newTarget[0], newTarget[1]);
-                }
-            }
-            UpdateWorldPosition();
-        }
-        else
-        {
-            if (playerX >= (x - visualRadius) && playerX <= (x + visualRadius) && playerY >= (y - visualRadius) && playerY <= (y + visualRadius))
-            {
-                Pathfind(playerX, playerY);
-            }
-            else
-            {
-                int[] newTarget = mapManager.GetRandomPosition();
-                Pathfind(newTarget[0], newTarget[1]);
-            }
-        }
-        */
-        //* James' code
 		//visual detection
-		if (playerX >= (x - visualRadius) && playerX <= (x + visualRadius) && playerY >= (y - visualRadius) && playerY <= (y + visualRadius))
-        {
+		float distanceToPlayer = 0;
+		distanceToPlayer = Mathf.Sqrt (Mathf.Pow ((x - playerX), 2) + Mathf.Pow ((y - playerY), 2));
+		Debug.Log ("Distance to player: " + distanceToPlayer);
+		if ( distanceToPlayer < 7) {
 			int[] position = Movement (playerX, playerY);//returns int[] of movment position
 			if (position != null) {
 				x = position [0];
 				y = position [1];
 				UpdateWorldPosition ();
 			}
+		} else {
+			//Pathfind to a random position on the map
+			UpdateWorldPosition ();
 		}
 		//*/
     }
@@ -326,7 +268,9 @@ public class NPCManager : MonoBehaviour
             int tempX = q[1];
             int tempY = q[2];
             int addToIndex = 1;
-            //if (!mapManager.GetTile(tempX, (tempY + 1)).solid)
+            
+			//if (mapManager.GetTile(tempX, tempY + 1) != null)
+			if (!mapManager.GetTile(tempX, (tempY + 1)).solid)
             //if (tempY + 1 < 19)
             {
                 openL = successorNode(q, tempX, (tempY + 1), playerX, playerY, openL, closeL, lNode[0] + addToIndex);
@@ -339,7 +283,8 @@ public class NPCManager : MonoBehaviour
             //PrintList(openL, "open");
 
             //down
-            //if (!mapManager.GetTile(tempX, (tempY - 1)).solid)
+			//if (mapManager.GetTile(tempX, tempY - 1) != null)
+			if (!mapManager.GetTile(tempX, (tempY - 1)).solid)
             //if (tempY - 1 >= 0)
             {
                 openL = successorNode(q, tempX, (tempY - 1), playerX, playerY, openL, closeL, lNode[0] + addToIndex);
@@ -347,7 +292,8 @@ public class NPCManager : MonoBehaviour
             }
             //PrintList(openL, "open");
             //left
-            //if (!mapManager.GetTile((tempY + 1), tempY).solid)
+			//if (mapManager.GetTile(tempX + 1, tempY) != null)
+            if (!mapManager.GetTile((tempX + 1), tempY).solid)
             //if (tempX + 1 < 19)
             {
                 openL = successorNode(q, (tempX + 1), tempY, playerX, playerY, openL, closeL, lNode[0] + addToIndex);
@@ -355,7 +301,8 @@ public class NPCManager : MonoBehaviour
             }
             //PrintList(openL, "open");
             //right
-            //if (!mapManager.GetTile((tempX - 1), tempY).solid)
+			//if (mapManager.GetTile(tempX - 1, tempY) != null)
+            if (!mapManager.GetTile((tempX - 1), tempY).solid)
             //if (tempX - 1 >= 0)
             {
                 openL = successorNode(q, (tempX - 1), tempY, playerX, playerY, openL, closeL, lNode[0] + addToIndex);
@@ -435,165 +382,7 @@ public class NPCManager : MonoBehaviour
         }
         return openL;
     }
-    //Sam's pathfinding
-    void Pathfind(int targetX, int targetY)
-    {
-        List<int[]> openList = new List<int[]>();
-        List<int[]> closedList = new List<int[]>();
-        int[,] visitedSquares = new int[mapManager.mapWidth, mapManager.mapHeight];
-        int F;
-        int G;
-        int H;
-        int openListEntryNumber;
-        int closedListEntryNumber;
-        int parentID = 0;
-        int desiredID;
-        bool canMove;
 
-        int currentX;
-        int currentY;
-
-        currentX = x;
-        currentY = y;
-
-        movementPath = new List<int[]>();
-
-        pathDistance = 0;
-
-        visitedSquares[currentX, currentY] = 1;
-
-        int[] newEntry = new int[2];
-        newEntry[0] = currentX;
-        newEntry[1] = currentY;
-
-        closedList.Add(newEntry);
-
-        openListEntryNumber = -1;
-        closedListEntryNumber = 0;
-        G = 10;
-
-        int breakout = 0;
-
-        while (((currentX != targetX) && (currentY != targetY)) && breakout < 20)
-        {
-
-            canMove = false;
-
-            if (!mapManager.GetTile(currentX + 1, currentY).solid)
-            {
-                if (visitedSquares[currentX + 1, currentY] == 0)
-                {
-                    openListEntryNumber += 1;
-                    int[] openListEntry = new int[4];
-                    openListEntry[0] = currentX + 1;
-                    openListEntry[1] = currentY;
-                    openListEntry[2] = parentID;
-                    H = Mathf.Abs((currentX + 1) - targetX) + Mathf.Abs(currentY - targetY);
-                    F = G + H;
-                    openListEntry[3] = F;
-                    openList.Add(openListEntry);
-                    canMove = true;
-                }
-            }
-
-            if (!mapManager.GetTile(currentX - 1, currentY).solid)
-            {
-                if (visitedSquares[currentX - 1, currentY] == 0)
-                {
-                    openListEntryNumber += 1;
-                    int[] openListEntry = new int[4];
-                    openListEntry[0] = currentX - 1;
-                    openListEntry[1] = currentY;
-                    openListEntry[2] = parentID;
-                    H = Mathf.Abs((currentX - 1) - targetX) + Mathf.Abs(currentY - targetY);
-                    F = G + H;
-                    openListEntry[3] = F;
-                    openList.Add(openListEntry);
-                    canMove = true;
-                }
-            }
-
-            if (!mapManager.GetTile(currentX, currentY + 1).solid)
-            {
-                if (visitedSquares[currentX, currentY + 1] == 0)
-                {
-                    openListEntryNumber += 1;
-                    int[] openListEntry = new int[4];
-                    openListEntry[0] = currentX;
-                    openListEntry[1] = currentY + 1;
-                    openListEntry[2] = parentID;
-                    H = Mathf.Abs(currentX - targetX) + Mathf.Abs((currentY + 1) - targetY);
-                    F = G + H;
-                    openListEntry[3] = F;
-                    openList.Add(openListEntry);
-                    canMove = true;
-                }
-            }
-
-            if (!mapManager.GetTile(currentX, currentY - 1).solid)
-            {
-                if (visitedSquares[currentX, currentY - 1] == 0)
-                {
-                    openListEntryNumber += 1;
-                    int[] openListEntry = new int[4];
-                    openListEntry[0] = currentX;
-                    openListEntry[1] = currentY - 1;
-                    openListEntry[2] = parentID;
-                    H = Mathf.Abs(currentX - targetX) + Mathf.Abs((currentY - 1) - targetY);
-                    F = G + H;
-                    openListEntry[3] = F;
-                    openList.Add(openListEntry);
-                    canMove = true;
-                }
-            }
-
-            if (!canMove)
-            {
-                break;
-            }
-
-            desiredID = 0;
-
-            for (int count = 0; count <= openListEntryNumber; ++count)
-            {
-                if (openList[count][3] < openList[desiredID][3])
-                {
-                    desiredID = count;
-                }
-            }
-
-            closedListEntryNumber += 1;
-
-            int[] closedListEntry = new int[2];
-
-            closedListEntry[0] = openList[desiredID][0];
-            closedListEntry[1] = openList[desiredID][1];
-
-            closedList.Add(closedListEntry);
-
-            currentX = openList[desiredID][0];
-            currentY = openList[desiredID][1];
-
-            visitedSquares[currentX, currentY] = 1;
-
-            openListEntryNumber = -1;
-            ++breakout;
-        }
-
-        int[] movementPathEntry = new int[2];
-
-        for (int count = 0; count <= closedListEntryNumber; ++count)
-        {
-            movementPathEntry[0] = closedList[count][0];
-            movementPathEntry[1] = closedList[count][1];
-            movementPath.Add(movementPathEntry);
-            ++pathDistance;
-        }
-
-        movementPathPosition = 0;
-
-        distanceToPlayer = pathDistance;
-    }
     //James' old pathfinding
     public int[] Movements(int playerX, int playerY)
     {

@@ -10,7 +10,6 @@ public enum directions
 	west
 }
 
-
 public class EntityManager : MonoBehaviour
 {
 
@@ -113,7 +112,7 @@ public class EntityManager : MonoBehaviour
 				//Attack the enemy. If the player kills them, move into the space.
 				if (PlayerAttackEnemy (playerController.GetAllPlayerStats (), tempEnemyMap [playerX, playerY + 1] - 1)) {
 					++playerY;
-					//playerController.SetPosition (playerX, playerY);
+					playerController.SetPosition (playerX, playerY);
 					return true;
 				}
 			}
@@ -128,7 +127,7 @@ public class EntityManager : MonoBehaviour
 				//Attack the enemy. If the player kills them, move into the space.
 				if (PlayerAttackEnemy (playerController.GetAllPlayerStats (), tempEnemyMap [playerX + 1, playerY] - 1)) {
 					++playerX;
-					//playerController.SetPosition (playerX, playerY);
+					playerController.SetPosition (playerX, playerY);
 					return true;
 				}
 			}
@@ -143,7 +142,7 @@ public class EntityManager : MonoBehaviour
 				//Attack the enemy. If the player kills them, move into the space.
 				if (PlayerAttackEnemy (playerController.GetAllPlayerStats (), tempEnemyMap [playerX, playerY - 1] - 1)) {
 					--playerY;
-					//playerController.SetPosition (playerX, playerY);
+					playerController.SetPosition (playerX, playerY);
 					return true;
 				}
 			}
@@ -158,7 +157,7 @@ public class EntityManager : MonoBehaviour
 				//Attack the enemy. If the player kills them, move into the space.
 				if (PlayerAttackEnemy (playerController.GetAllPlayerStats (), tempEnemyMap [playerX - 1, playerY] - 1)) {
 					--playerX;
-					//playerController.SetPosition (playerX, playerY);
+					playerController.SetPosition (playerX, playerY);
 					return true;
 				}
 				return false;

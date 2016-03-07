@@ -59,6 +59,7 @@
      <Compile Include="Assets\Scripts\Objects\Dungeon.cs" />
      <Compile Include="Assets\Scripts\Objects\DungeonFloor.cs" />
      <Compile Include="Assets\Scripts\Objects\GameParameters.cs" />
+     <Compile Include="Assets\Scripts\Objects\HitResult.cs" />
      <Compile Include="Assets\Scripts\Objects\MapPalette.cs" />
      <Compile Include="Assets\Scripts\Objects\MapTile.cs" />
      <None Include="Assets\Graphics\README.txt" />
