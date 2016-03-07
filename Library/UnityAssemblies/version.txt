@@ -1,0 +1,6 @@
+5.3.1f1:2.1.0.0
+WebPlayer
+E:/Programs/Editor/Data/Managed/UnityEngine.dll
+E:/Programs/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll
+E:/Programs/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll
+E:/Programs/Editor/Data/Managed/UnityEditor.dll
