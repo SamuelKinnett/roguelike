@@ -15,14 +15,18 @@ public class EntityManager : MonoBehaviour
 
 	public GameObject obj_MapManager;
 	public GameObject obj_Player;
+	public GameObject obj_HitResultManager;
 
 	private MapManager mapManager;
 	private PlayerController playerController;
+	private HitResultManager hitResultManager;
 
 	List<NPCManager> enemies;
 
 	int playerX;
 	int playerY;
+
+	float spriteWidth;
 
 	//TESTING
 	public Sprite testEnemySprite;
@@ -51,13 +55,13 @@ public class EntityManager : MonoBehaviour
 		int numberOfEnemies = (int)(5 * Random.value + 1);	//Generate between 1 and 6 (both inclusive) enemies
 		enemies = new List<NPCManager> ();
 
-        //Temporary placeholder stats
-        NPCManager.stats tempStats = new NPCManager.stats();
-        tempStats.agility = 4;
-        tempStats.armour = 2;
-        tempStats.hp = 10;
-        tempStats.strength = 4;
-        tempStats.wisdom = 0;
+		//Temporary placeholder stats
+		NPCManager.stats tempStats = new NPCManager.stats ();
+		tempStats.agility = 4;
+		tempStats.armour = 2;
+		tempStats.hp = 10;
+		tempStats.strength = 4;
+		tempStats.wisdom = 0;
 		
 
 		for (int curEnemy = 0; curEnemy < numberOfEnemies; curEnemy++) {
@@ -77,7 +81,7 @@ public class EntityManager : MonoBehaviour
 		bool playerKilled = false;
 		foreach (NPCManager curNPC in enemies) {
 			if (curNPC.CanAttack (playerX, playerY)) {
-				playerKilled = (EnemyAttackPlayer (curNPC.GetAllEnemyStats()));
+				playerKilled = (EnemyAttackPlayer (curNPC.GetAllEnemyStats ()));
 			} else {
 				curNPC.Move (playerX, playerY);
 			}
@@ -97,7 +101,7 @@ public class EntityManager : MonoBehaviour
 		TileInfo targetTile;
 		int[,] tempEnemyMap = new int[mapManager.mapWidth, mapManager.mapHeight];
 		for (int curEnemy = 0; curEnemy < enemies.Count; ++curEnemy) {
-			tempEnemyMap[enemies[curEnemy].GetPosition()[0], enemies[curEnemy].GetPosition()[1]] = curEnemy + 1;
+			tempEnemyMap [enemies [curEnemy].GetPosition () [0], enemies [curEnemy].GetPosition () [1]] = curEnemy + 1;
 		}
 
 		switch (direction) {
@@ -230,7 +234,8 @@ public class EntityManager : MonoBehaviour
 		return false;
 	}
 
-	public void updateEntityCollisionKnowledge() {
+	public void updateEntityCollisionKnowledge ()
+	{
 		foreach (NPCManager currentEnemy in enemies) {
 			bool[] adjacentEntities = new bool[4];
 			adjacentEntities [0] = CheckCollision (currentEnemy.GetPosition () [0] - 1, currentEnemy.GetPosition () [1]);
@@ -241,11 +246,17 @@ public class EntityManager : MonoBehaviour
 		}
 	}
 
-	public bool CheckCollision (int x, int y) {
+	public bool CheckCollision (int x, int y)
+	{
 		foreach (NPCManager currentEnemy in enemies) {
-			if (currentEnemy.CheckCollision(x, y) || (x == playerX && y == playerY))
+			if (currentEnemy.CheckCollision (x, y) || (x == playerX && y == playerY))
 				return true;
 		}
 		return false;
+	}
+
+	public float GetSpriteSize ()
+	{
+		return playerController.GetSpriteSize ();
 	}
 }
