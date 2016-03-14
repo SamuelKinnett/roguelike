@@ -9,12 +9,16 @@ using System.Collections.Generic;
 public class HitResultManager : MonoBehaviour
 {
 
+	public GameObject obj_Camera;
+
 	List<HitResult> hitResults;
+	private CameraController cameraController;
 
 	// Use this for initialization
 	void Start ()
 	{
 		hitResults = new List<HitResult> ();
+		cameraController = obj_Camera.GetComponent<CameraController> ();
 	}
 	
 	// Update is called once per frame
@@ -51,5 +55,7 @@ public class HitResultManager : MonoBehaviour
 
 		newWorldObject.GetComponent<HitResult> ().Initialise (x, y, textToDisplay, gridSize);
 		hitResults.Add (newWorldObject.GetComponent<HitResult> ());
+
+		cameraController.AddHitEffect (0.3f);
 	}
 }
