@@ -55,12 +55,6 @@
     <Reference Include="UnityEngine.Networking">
       <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.Networking">
-      <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>Library\UnityAssemblies\UnityEngine.UI.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEditor">
       <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
     </Reference>
@@ -73,9 +67,7 @@
     <Compile Include="Assets\Scripts\Game Logic\GameController.cs" />
     <Compile Include="Assets\Scripts\Game Logic\MapManager.cs" />
     <Compile Include="Assets\Scripts\Game Logic\NPCManager.cs" />
-    <Compile Include="Assets\Scripts\Game Logic\Node.cs" />
     <Compile Include="Assets\Scripts\Game Logic\PlayerController.cs" />
-    <Compile Include="Assets\Scripts\Game Logic\SearchPerameters.cs" />
     <Compile Include="Assets\Scripts\Graphics\CameraController.cs" />
     <Compile Include="Assets\Scripts\Objects\Dungeon.cs" />
     <Compile Include="Assets\Scripts\Objects\DungeonFloor.cs" />
