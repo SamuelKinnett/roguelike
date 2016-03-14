@@ -31,8 +31,6 @@ public class MapManager : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
-		map = new MapTile[mapWidth, mapHeight];
-
 		//clamp the falloff value such that the "light level" of a tile
 		// never falls below 0.2f
 
@@ -73,12 +71,25 @@ public class MapManager : MonoBehaviour
 	void UpdateEmptyTileList ()
 	{
 		emptyTiles = new List<MapTile> ();
+
 		for (int x = 0; x < mapWidth; ++x) {
 			for (int y = 0; y < mapHeight; ++y) {
-				if (map [x, y] != null) {
+				if (map [x, y] != null && map[x, y].GetInfo().active) {
 					if (!map [x, y].GetInfo ().solid)
 						emptyTiles.Add (map [x, y]);
 				}
+			}
+		}
+	}
+
+	public void InitialiseMap() {
+		map = new MapTile[mapWidth, mapHeight];
+
+		Debug.Log ("Map Initialised");
+
+		for (int x = 0; x < mapWidth; ++x) {
+			for (int y = 0; y < mapHeight; ++y) {
+				map [x, y] = new MapTile ();
 			}
 		}
 	}
@@ -88,7 +99,8 @@ public class MapManager : MonoBehaviour
 		for (int x = 0; x < mapWidth; ++x) {
 			for (int y = 0; y < mapHeight; ++y) {
 				if (map [x, y] != null) {
-					if (GetTile (x, y).visibility == TileVisibility.visible) {
+					if (GetTile (x, y).visibility == TileVisibility.visible
+						&& GetTile(x, y).active) {
 						map [x, y].SetVisibility (TileVisibility.seen);
 					}
 				}
@@ -104,7 +116,8 @@ public class MapManager : MonoBehaviour
 			int count = 0;
 
 			while (!map [mapX, mapY].GetInfo ().solid
-			       && count < viewRange) {
+					&& map[mapX, mapY].GetInfo().active
+			       	&& count < viewRange) {
 				if (falloffEnabled) {
 					map [mapX, mapY].SetLightIntensity ((float)(1.0f - (viewFalloff * count)));
 					map [mapX, mapY].SetVisibility (TileVisibility.visible);
@@ -308,13 +321,13 @@ public class MapManager : MonoBehaviour
 				List<int> possibleTopX = new List<int> ();
 				List<int> possibleBottomX = new List<int> ();
 
-				for (int tempX = room1.x; tempX < room1.x + room1.width; ++tempX) {
+				for (int tempX = room1.x; tempX < room1.x + (room1.width - 1); ++tempX) {
 					if (collisionMap [tempX, bottomRoomY] == 1) {
 						possibleBottomX.Add (tempX);
 					}
 				}
 					
-				for (int tempX = room2.x; tempX < room2.x + room2.width; ++tempX) {
+				for (int tempX = room2.x; tempX < room2.x + (room2.width - 1); ++tempX) {
 					if (collisionMap [tempX, topRoomY] == 1) {
 						possibleTopX.Add (tempX);
 					}
@@ -403,14 +416,14 @@ public class MapManager : MonoBehaviour
 
 				//Debug.Log ("Beginning Left Search! Room co-ords: " + room1.x + ", " + room1.y +
 				//"\nRoom dimensions: " + room1.width + ", " + room1.height);
-				for (int tempY = room1.y; tempY < room1.y + room1.height; ++tempY) {
-					//Debug.Log ("Current tile: " + leftRoomX + ", " + tempY);
+				for (int tempY = room1.y; tempY < (room1.y + room1.height - 1); ++tempY) {
+					Debug.Log ("Current tile: " + leftRoomX + ", " + tempY);
 					if (collisionMap [leftRoomX, tempY] == 1) {
 						possibleLeftY.Add (tempY);
 					}
 				}
 
-				for (int tempY = room2.y; tempY < room2.y + room2.height; ++tempY) {
+				for (int tempY = room2.y; tempY < (room2.y + room2.height - 1); ++tempY) {
 					if (collisionMap [rightRoomX, tempY] == 1) {
 						possibleRightY.Add (tempY);
 					}
@@ -449,6 +462,10 @@ public class MapManager : MonoBehaviour
 	public void GenerateDungeon (int mapWidth, int mapHeight, int numberOfFloors)
 	{
 		dungeon = new Dungeon ();
+		this.mapWidth = mapWidth;
+		this.mapHeight = mapHeight;
+		InitialiseMap ();
+
 		for (int floor = 0; floor < numberOfFloors - 1; ++floor) {
 			GenerateFloor (mapWidth, mapHeight);
 		}
@@ -486,7 +503,15 @@ public class MapManager : MonoBehaviour
 	{
 		int[,] collisionMap = new int[mapWidth, mapHeight];
 
+		for (int x = 0; x < mapWidth; ++x) {
+			for (int y = 0; y < mapHeight; ++y) {
+				if (map[x, y].GetInfo().active)
+					map [x, y].SetInactive ();
+			}
+		}
+
 		//Clear the current maptile gameobjects
+		/*
 		for (int x = 0; x < mapWidth; ++x) {
 			for (int y = 0; y < mapHeight; ++y) {
 				if (map [x, y] != null) {
@@ -495,6 +520,7 @@ public class MapManager : MonoBehaviour
 				}
 			}
 		}
+		*/
 			
 		stairPositions = dungeon.GetFloor (level).GetStairPositions ();
 		CreateTiles (dungeon.GetFloor (level).GetCollisionMap (),
@@ -525,7 +551,7 @@ public class MapManager : MonoBehaviour
 		TileVisibility[,] visibilityMap = new TileVisibility[mapWidth, mapHeight];
 		for (int x = 0; x < mapWidth; ++x) {
 			for (int y = 0; y < mapHeight; ++y) {
-				if (map [x, y] != null) {
+				if (map [x, y] != null && map[x, y].GetInfo().active) {
 					visibilityMap [x, y] = map [x, y].GetInfo ().visibility;
 				}
 			}
@@ -554,14 +580,12 @@ public class MapManager : MonoBehaviour
 				if (tempX == stairPositions [0] &&
 				    tempY == stairPositions [1]) {
 					//This tile is the upwards staircase
-					map [tempX, tempY] = new MapTile ();
-					map [tempX, tempY].CreateTile (tempX, tempY, false, true, false, upStair);
+					map [tempX, tempY].SetTile (tempX, tempY, false, true, false, upStair);
 					map [tempX, tempY].SetVisibility (visibilityMap [tempX, tempY]);
 				} else if (tempX == stairPositions [2] &&
 				           tempY == stairPositions [3]) {
 					//This tile is the downwards staircase
-					map [tempX, tempY] = new MapTile ();
-					map [tempX, tempY].CreateTile (tempX, tempY, false, false, true, downStair);
+					map [tempX, tempY].SetTile (tempX, tempY, false, false, true, downStair);
 					map [tempX, tempY].SetVisibility (visibilityMap [tempX, tempY]);
 				} else {
 					if (collisionMap [tempX, tempY] == 1) {
@@ -651,8 +675,7 @@ public class MapManager : MonoBehaviour
 							break;
 						}	
 						//Debug.Log ("Here's a tile!");
-						map [tempX, tempY] = new MapTile ();
-						map [tempX, tempY].CreateTile (tempX, tempY, false, false, false, tileSprite);
+						map [tempX, tempY].SetTile (tempX, tempY, false, false, false, tileSprite);
 						map [tempX, tempY].SetVisibility (visibilityMap [tempX, tempY]);
 					} else {
 						if (tempX == 0) {
@@ -823,8 +846,7 @@ public class MapManager : MonoBehaviour
 					}
 
 					//Debug.Log ("Here's a tile!");
-					map [tempX, tempY] = new MapTile ();
-					map [tempX, tempY].CreateTile (tempX, tempY, true, false, false, tileSprite);
+					map [tempX, tempY].SetTile (tempX, tempY, true, false, false, tileSprite);
 					map [tempX, tempY].SetVisibility (visibilityMap [tempX, tempY]);
 				}
 			}

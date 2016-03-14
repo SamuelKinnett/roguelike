@@ -18,7 +18,7 @@ public class HitResult : MonoBehaviour
 		this.gridSize = gridSize;
 		tempTransform.x = x * gridSize;
 		tempTransform.y = y * gridSize + 2 * gridSize;
-		tempTransform.z = -2;
+		tempTransform.z = -5;
 
 		textMesh = this.GetComponent<TextMesh> ();
 
