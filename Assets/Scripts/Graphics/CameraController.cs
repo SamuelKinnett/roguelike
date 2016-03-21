@@ -39,6 +39,8 @@ public class CameraController : MonoBehaviour
 	//Width and height of the player sprite in world
 	// units. Since all tiles, both terrain and mobs, are the same size, this can be
 	// used in calculations besides those pertaining to the player sprite.
+	float hitTimer;
+	//This timer is used to shake the camera for a time after being hit.
 	int mapWidth, mapHeight;
 
 	// Use this for initialization
@@ -127,5 +129,17 @@ public class CameraController : MonoBehaviour
 			}
 		}
 
+		if (hitTimer > 0) {
+			Vector3 tempPosition = Camera.main.transform.position;
+			tempPosition.x = targetPosition.x + (Random.value - 1) / 10;
+			tempPosition.y = targetPosition.y + (Random.value - 1) / 10;
+			Camera.main.transform.position = tempPosition;
+			hitTimer -= Time.deltaTime;
+		}
+
+	}
+
+	public void AddHitEffect( float seconds) {
+		hitTimer = seconds;
 	}
 }

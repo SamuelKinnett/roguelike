@@ -6,11 +6,13 @@ public class GameController : MonoBehaviour
 
 	public GameObject obj_MapManager;
 	public GameObject obj_EntityManager;
+	public GameObject obj_HitResultManager;
 	public string paletteName;
 
 	private MapManager mapManager;
 	private EntityManager entityManager;
 	private GameParameters gameParameters;
+	private HitResultManager hitResultManager;
 
 	bool newMapNeeded;
 	bool paused;
@@ -30,6 +32,7 @@ public class GameController : MonoBehaviour
 	{
 		mapManager = obj_MapManager.GetComponent<MapManager> ();
 		entityManager = obj_EntityManager.GetComponent<EntityManager> ();
+		hitResultManager = obj_HitResultManager.GetComponent<HitResultManager> ();
 		GameObject gameParams = GameObject.Find ("GameParams");
 		gameParameters = gameParams.GetComponent<GameParameters> ();
 
@@ -86,9 +89,12 @@ public class GameController : MonoBehaviour
 					direction = directions.west;
 					key = "left";
 					moveKeyPressed = true;
-				} else if (Input.GetKey(KeyCode.Hash)) {
+				} else if (Input.GetKey (KeyCode.Hash)) {
 					//temporary wait key
 					playerMoved = true;
+				} else if (Input.GetKey (KeyCode.H)) {
+					HitResult testHitResult = new HitResult ();
+					hitResultManager.CreateHitResult (entityManager.GetPlayerPosition () [0], entityManager.GetPlayerPosition () [1], "Test", entityManager.GetSpriteSize ());
 				}
 
 				//ensure that only valid keys have been pushed
