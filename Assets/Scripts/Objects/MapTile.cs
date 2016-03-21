@@ -17,6 +17,7 @@ public struct TileInfo
 	public bool stairsDown;
 	public TileVisibility visibility;
 	public float intensity;
+	public bool active;
 }
 
 public class MapTile : ScriptableObject
@@ -29,6 +30,8 @@ public class MapTile : ScriptableObject
 	TileVisibility oldVisibility;
 	//Used so that the shading of the tile is only
 	//updated as necessary
+
+	bool initialised;	//Has the tile been initialised?
 
 	void Update ()
 	{
@@ -45,18 +48,48 @@ public class MapTile : ScriptableObject
 
 	}
 
-	public void CreateTile (int x, int y, bool solid, bool stairsUp, bool stairsDown, Sprite sprite)
-	{
+	/// <summary>
+	/// This method is used to initialise the tile and to attach the sprite renderer
+	/// </summary>
+	/// <param name="x">The x coordinate.</param>
+	/// <param name="y">The y coordinate.</param>
+	public void InitialiseTile(int x, int y) {
 		info.x = x;
 		info.y = y;
-		info.solid = solid;
-		info.stairsUp = stairsUp;
-		info.stairsDown = stairsDown;
-
-		this.sprite = sprite;
+		info.active = false;
 
 		worldTile = new GameObject ();
 		worldTile.AddComponent<SpriteRenderer> ();
+
+		//Set the spriterenderer to initially make the tile invisible (unseen)
+		worldTile.GetComponent<SpriteRenderer> ().enabled = false;
+		worldTile.name = "Tile [" + info.x + "," + info.y + "]";
+
+		initialised = true;
+	}
+
+
+	/// <summary>
+	/// This function is called when a tile needs to be updated or changed
+	/// </summary>
+	/// <param name="x">The x coordinate.</param>
+	/// <param name="y">The y coordinate.</param>
+	/// <param name="solid">If set to <c>true</c> solid.</param>
+	/// <param name="stairsUp">If set to <c>true</c> stairs up.</param>
+	/// <param name="stairsDown">If set to <c>true</c> stairs down.</param>
+	/// <param name="sprite">Sprite.</param>
+	public void SetTile (int x, int y, bool solid, bool stairsUp, bool stairsDown, Sprite sprite)
+	{
+
+		if (!initialised)
+			InitialiseTile (x, y);
+
+		info.solid = solid;
+		info.stairsUp = stairsUp;
+		info.stairsDown = stairsDown;
+		info.active = true;
+
+		this.sprite = sprite;
 		worldTile.GetComponent<SpriteRenderer> ().sprite = this.sprite;
 
 		//Place the tile in world space
@@ -70,7 +103,7 @@ public class MapTile : ScriptableObject
 		tilePosition.y = y * worldTile.GetComponent<SpriteRenderer> ().bounds.size.y;
 
 		worldTile.transform.position = tilePosition;
-	
+
 		//Set the spriterenderer to initially make the tile invisible (unseen)
 		worldTile.GetComponent<SpriteRenderer> ().enabled = false;
 	}
@@ -128,6 +161,11 @@ public class MapTile : ScriptableObject
 
 	public void SetLightIntensity(float intensity) {
 		info.intensity = intensity;
+	}
+
+	public void SetInactive() {
+		info.active = false;
+		worldTile.GetComponent<SpriteRenderer> ().enabled = false;
 	}
 
 	public TileInfo GetInfo ()
