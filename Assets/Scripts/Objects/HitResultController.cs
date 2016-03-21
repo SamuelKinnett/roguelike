@@ -18,11 +18,13 @@ public class HitResult : MonoBehaviour
 		this.gridSize = gridSize;
 		tempTransform.x = x * gridSize;
 		tempTransform.y = y * gridSize + 2 * gridSize;
-		tempTransform.z = -5;
+		tempTransform.z = -2;
 
 		textMesh = this.GetComponent<TextMesh> ();
 
 		textMesh.text = textToDisplay;
+		textMesh.color = Color.white;
+		textMesh.font = (Font)Resources.Load("Fonts/SDS_6x6");
 		duration = 0.6f;
 		initialDuration = duration;
 		this.transform.position = tempTransform;
@@ -44,7 +46,7 @@ public class HitResult : MonoBehaviour
 			tempColor.a = (initialDuration * duration);
 			if (tempColor.a < 0)
 				tempColor.a = 0;
-			Debug.Log (tempColor.a);
+			Debug.Log (tempTransform.x + "," + tempTransform.y + "," + tempColor.a);
 			textMesh.color = tempColor;
 
 			if (duration <= 0) {

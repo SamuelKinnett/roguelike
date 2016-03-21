@@ -89,20 +89,32 @@ public class MapManager : MonoBehaviour
 				if (map [x, y] != null && map[x, y].GetInfo().active) {
 					if (!map [x, y].GetInfo ().solid)
 						emptyTiles.Add (map [x, y]);
-
-					int surroundings = 0;
-					if (map [x - 1, y] != null && map [x - 1, y].GetInfo ().active && !map [x - 1, y].GetInfo ().solid)
-						surroundings = surroundings & 1;
-					if (map [x + 1, y] != null && map [x + 1, y].GetInfo ().active && !map [x + 1, y].GetInfo ().solid)
-						surroundings = surroundings & 2;
-					if (map [x, y - 1] != null && map [x, y - 1].GetInfo ().active && !map [x, y - 1].GetInfo ().solid)
-						surroundings = surroundings & 4;
-					if (map [x, y + 1] != null && map [x, y + 1].GetInfo ().active && !map [x, y + 1].GetInfo ().solid)
-						surroundings = surroundings & 8;
-
-					if (surroundings == 15)
-						spawnPoints.Add (map [x, y]);
 				}
+			}
+		}
+
+		for (int x = 1; x < mapWidth - 1; ++x) {
+			for (int y = 1; y < mapHeight - 1; ++y) {
+				int surroundings = 0;
+				if (map [x - 1, y] != null && map [x - 1, y].GetInfo ().active && !map [x - 1, y].GetInfo ().solid)
+					surroundings = surroundings | 1;
+				if (map [x + 1, y] != null && map [x + 1, y].GetInfo ().active && !map [x + 1, y].GetInfo ().solid)
+					surroundings = surroundings | 2;
+				if (map [x, y - 1] != null && map [x, y - 1].GetInfo ().active && !map [x, y - 1].GetInfo ().solid)
+					surroundings = surroundings | 4;
+				if (map [x, y + 1] != null && map [x, y + 1].GetInfo ().active && !map [x, y + 1].GetInfo ().solid)
+					surroundings = surroundings | 8;
+				if (map [x - 1, y - 1] != null && map [x - 1, y - 1].GetInfo ().active && !map [x - 1, y - 1].GetInfo ().solid)
+					surroundings = surroundings | 16;
+				if (map [x + 1, y - 1] != null && map [x + 1, y - 1].GetInfo ().active && !map [x + 1, y - 1].GetInfo ().solid)
+					surroundings = surroundings | 32;
+				if (map [x - 1, y + 1] != null && map [x - 1, y + 1].GetInfo ().active && !map [x - 1, y + 1].GetInfo ().solid)
+					surroundings = surroundings | 64;
+				if (map [x + 1, y + 1] != null && map [x + 1, y + 1].GetInfo ().active && !map [x + 1, y + 1].GetInfo ().solid)
+					surroundings = surroundings | 128;
+
+				if (surroundings == 255)
+					spawnPoints.Add (map [x, y]);
 			}
 		}
 	}
