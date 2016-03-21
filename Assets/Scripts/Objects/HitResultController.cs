@@ -24,7 +24,7 @@ public class HitResult : MonoBehaviour
 
 		textMesh.text = textToDisplay;
 		textMesh.color = Color.white;
-		textMesh.font = (Font)Resources.Load("Fonts/SDS_6x6");
+		textMesh.font = (Font)Resources.Load ("Fonts/SDS_6x6");
 		duration = 0.6f;
 		initialDuration = duration;
 		this.transform.position = tempTransform;
@@ -46,7 +46,6 @@ public class HitResult : MonoBehaviour
 			tempColor.a = (initialDuration * duration);
 			if (tempColor.a < 0)
 				tempColor.a = 0;
-			Debug.Log (tempTransform.x + "," + tempTransform.y + "," + tempColor.a);
 			textMesh.color = tempColor;
 
 			if (duration <= 0) {

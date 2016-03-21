@@ -86,7 +86,7 @@ public class MapManager : MonoBehaviour
 
 		for (int x = 0; x < mapWidth; ++x) {
 			for (int y = 0; y < mapHeight; ++y) {
-				if (map [x, y] != null && map[x, y].GetInfo().active) {
+				if (map [x, y] != null && map [x, y].GetInfo ().active) {
 					if (!map [x, y].GetInfo ().solid)
 						emptyTiles.Add (map [x, y]);
 				}
@@ -119,7 +119,8 @@ public class MapManager : MonoBehaviour
 		}
 	}
 
-	public void InitialiseMap() {
+	public void InitialiseMap ()
+	{
 		map = new MapTile[mapWidth, mapHeight];
 
 		Debug.Log ("Map Initialised");
@@ -137,7 +138,7 @@ public class MapManager : MonoBehaviour
 			for (int y = 0; y < mapHeight; ++y) {
 				if (map [x, y] != null) {
 					if (GetTile (x, y).visibility == TileVisibility.visible
-						&& GetTile(x, y).active) {
+					    && GetTile (x, y).active) {
 						map [x, y].SetVisibility (TileVisibility.seen);
 					}
 				}
@@ -153,8 +154,8 @@ public class MapManager : MonoBehaviour
 			int count = 0;
 
 			while (!map [mapX, mapY].GetInfo ().solid
-					&& map[mapX, mapY].GetInfo().active
-			       	&& count < viewRange) {
+			       && map [mapX, mapY].GetInfo ().active
+			       && count < viewRange) {
 				if (falloffEnabled) {
 					map [mapX, mapY].SetLightIntensity ((float)(1.0f - (viewFalloff * count)));
 					map [mapX, mapY].SetVisibility (TileVisibility.visible);
@@ -165,12 +166,20 @@ public class MapManager : MonoBehaviour
 				mapX = (int)Mathf.Round (tempX);
 				mapY = (int)Mathf.Round (tempY);
 				++count;
+
+				if (mapX >= mapWidth || mapY >= mapHeight || mapX < 0 || mapY < 0)
+					break;
 			}
-			if (falloffEnabled) {
-				map [mapX, mapY].SetLightIntensity ((float)(1.0f - (viewFalloff * count)));
-				map [mapX, mapY].SetVisibility (TileVisibility.visible);
-			} else
-				map [mapX, mapY].SetVisibility (TileVisibility.visible);
+
+			//Now, make sure that the wall tile is visible
+			if (mapX < mapWidth && mapY < mapHeight
+			    && mapX >= 0 && mapY >= 0) {
+				if (falloffEnabled) {
+					map [mapX, mapY].SetLightIntensity ((float)(1.0f - (viewFalloff * count)));
+					map [mapX, mapY].SetVisibility (TileVisibility.visible);
+				} else
+					map [mapX, mapY].SetVisibility (TileVisibility.visible);
+			}
 		}
 	}
 
@@ -204,7 +213,9 @@ public class MapManager : MonoBehaviour
 		public void Split (int desiredDepth)
 		{
 
-			if (depth == desiredDepth)
+			if (depth == desiredDepth
+			    || width < 10
+			    || height < 10)
 				return;
 			
 			double splitAmount;
@@ -219,7 +230,18 @@ public class MapManager : MonoBehaviour
 			if (axis % 2 == 1) {
 				//split horizontally
 				splitType = 0;
+
+				//We now need to ensure that no room is ever split such that the resultant rooms
+				// have a width or height smaller than 5, since the smallest possible dungeon
+				// room is 3x3 and we want to be able to place this comfortably with a 1 block
+				// border.
+
 				int splitLocation = (int)(height * splitAmount);
+				while (splitLocation < 5)
+					++splitLocation;
+				while (height - splitLocation < 5)
+					--splitLocation;
+				
 				children [0] = new MapNode (x, y, width, splitLocation, depth + 1);
 				children [0].Split (desiredDepth);
 				children [1] = new MapNode (x, y + splitLocation, width, height - splitLocation, depth + 1);
@@ -228,6 +250,11 @@ public class MapManager : MonoBehaviour
 				//split vertically
 				splitType = 1;
 				int splitLocation = (int)(width * splitAmount);
+				while (splitLocation < 5)
+					++splitLocation;
+				while (height - splitLocation < 5)
+					--splitLocation;
+				
 				children [0] = new MapNode (x, y, splitLocation, height, depth + 1);
 				children [0].Split (desiredDepth);
 				children [1] = new MapNode (x + splitLocation, y, width - splitLocation, height, depth + 1);
@@ -244,7 +271,7 @@ public class MapManager : MonoBehaviour
 		{
 			int[,] tempCollisionMap = collisionMap;
 
-			if (depth == desiredDepth) {
+			if (children == null) {
 
 				//Decide on the position of the room and then the dimensions
 				//Place the origin of the room somewhere within the lower left corner
@@ -259,8 +286,22 @@ public class MapManager : MonoBehaviour
 				if (roomY == y)
 					++roomY;
 
-				int newMaxWidth = width - (roomX - x);
-				int newMaxHeight = height - (roomY - y);
+				int newMaxWidth; // = width - (roomX - x);
+				int newMaxHeight; // = height - (roomY - y);
+
+				//If the room is smaller than the maximum room size specified, then the maximum
+				// width the generated room can be is as big as the room size. Otherwise, we
+				// clamp the value.
+
+				if (width < maxRoomWidth)
+					newMaxWidth = width - 2;
+				else
+					newMaxWidth = maxRoomWidth - 2;
+
+				if (height < maxRoomHeight)
+					newMaxHeight = height - 2;
+				else
+					newMaxHeight = maxRoomHeight - 2;
 
 				int roomWidth = (int)((newMaxWidth - 3) * Random.value + 3);
 				int roomHeight = (int)((newMaxHeight - 3) * Random.value + 3);
@@ -274,11 +315,11 @@ public class MapManager : MonoBehaviour
 
 				//Ensure that the room never touches the area boundaries
 
-				if (roomX + roomWidth == width)
-					--roomWidth;
+				while (roomX + roomWidth >= x + width)
+					--roomX;
 
-				if (roomY + roomHeight == height)
-					--roomHeight;
+				while (roomY + roomHeight >= y + height)
+					--roomY;
 
 				for (int tempX = roomX; tempX < roomX + roomWidth; ++tempX) {
 					for (int tempY = roomY; tempY < roomY + roomHeight; ++tempY) {
@@ -332,6 +373,9 @@ public class MapManager : MonoBehaviour
 						break;
 				}
 
+				if (!spaceFound)
+					Debug.Log ("Oh snap, error: " + room1.x + ", " + room1.y + ", " + room1.width + ", " + room1.height);
+
 				//Now, calculate the "lowest" y value of the top area
 				spaceFound = false;
 				for (int tempY = room2.y; tempY < room2.y + room2.height; ++tempY) {
@@ -358,19 +402,14 @@ public class MapManager : MonoBehaviour
 				List<int> possibleTopX = new List<int> ();
 				List<int> possibleBottomX = new List<int> ();
 
-				Debug.Log ("Bottom Room Y: " + bottomRoomY);
-				Debug.Log ("Top Room Y: " + topRoomY);
-
 				for (int tempX = room1.x; tempX < room1.x + (room1.width - 1); ++tempX) {
 					if (collisionMap [tempX, bottomRoomY] == 1) {
-						Debug.Log ("Finding Bottom X. Current Position: " + tempX + ", " + bottomRoomY);
 						possibleBottomX.Add (tempX);
 					}
 				}
 					
 				for (int tempX = room2.x; tempX < room2.x + (room2.width - 1); ++tempX) {
 					if (collisionMap [tempX, topRoomY] == 1) {
-						Debug.Log ("Finding Top X. Current Position: " + tempX + ", " + topRoomY);
 						possibleTopX.Add (tempX);
 					}
 				}
@@ -456,13 +495,9 @@ public class MapManager : MonoBehaviour
 				List<int> possibleRightY = new List<int> ();
 				List<int> possibleLeftY = new List<int> ();
 
-				Debug.Log ("Left Room X: " + leftRoomX);
-				Debug.Log ("Right Room X: " + rightRoomX);
-
 				//Debug.Log ("Beginning Left Search! Room co-ords: " + room1.x + ", " + room1.y +
 				//"\nRoom dimensions: " + room1.width + ", " + room1.height);
 				for (int tempY = room1.y; tempY < (room1.y + room1.height - 1); ++tempY) {
-					Debug.Log ("Current tile: " + leftRoomX + ", " + tempY);
 					if (collisionMap [leftRoomX, tempY] == 1) {
 						possibleLeftY.Add (tempY);
 					}
@@ -550,7 +585,7 @@ public class MapManager : MonoBehaviour
 
 		for (int x = 0; x < mapWidth; ++x) {
 			for (int y = 0; y < mapHeight; ++y) {
-				if (map[x, y].GetInfo().active)
+				if (map [x, y].GetInfo ().active)
 					map [x, y].SetInactive ();
 			}
 		}
@@ -596,7 +631,7 @@ public class MapManager : MonoBehaviour
 		TileVisibility[,] visibilityMap = new TileVisibility[mapWidth, mapHeight];
 		for (int x = 0; x < mapWidth; ++x) {
 			for (int y = 0; y < mapHeight; ++y) {
-				if (map [x, y] != null && map[x, y].GetInfo().active) {
+				if (map [x, y] != null && map [x, y].GetInfo ().active) {
 					visibilityMap [x, y] = map [x, y].GetInfo ().visibility;
 				}
 			}
@@ -719,7 +754,7 @@ public class MapManager : MonoBehaviour
 							tileSprite = palette.floorTiles [(int)FloorPalette.FullyEnclosed];
 							break;
 						}	
-						//Debug.Log ("Here's a tile!");
+
 						map [tempX, tempY].SetTile (tempX, tempY, false, false, false, tileSprite);
 						map [tempX, tempY].SetVisibility (visibilityMap [tempX, tempY]);
 					} else {
@@ -889,8 +924,7 @@ public class MapManager : MonoBehaviour
 						tileSprite = palette.wallTiles [(int)WallPalette.FourWay];
 						break;
 					}
-
-					//Debug.Log ("Here's a tile!");
+						
 					map [tempX, tempY].SetTile (tempX, tempY, true, false, false, tileSprite);
 					map [tempX, tempY].SetVisibility (visibilityMap [tempX, tempY]);
 				}
@@ -962,8 +996,6 @@ public class MapManager : MonoBehaviour
 			stairCoords [3] = stair1Y;
 		}
 
-		Debug.Log (stairCoords [0] + ", " + stairCoords [1] +
-		"\n" + stairCoords [2] + ", " + stairCoords [3]);
 		return stairCoords;
 	}
 
