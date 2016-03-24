@@ -186,7 +186,7 @@ public class NPCManager : MonoBehaviour
 		//visual detection
 		float distanceToPlayer = 0;
 		distanceToPlayer = Mathf.Sqrt (Mathf.Pow ((x - playerX), 2) + Mathf.Pow ((y - playerY), 2));
-		Debug.Log ("Distance to player: " + distanceToPlayer);
+		//Debug.Log ("Distance to player: " + distanceToPlayer);
 		if ( distanceToPlayer < 7) {
 			int[] position = Movement (playerX, playerY);//returns int[] of movment position
 			if (position != null) {
@@ -295,7 +295,7 @@ public class NPCManager : MonoBehaviour
         {
             if (n[0] == index)
             {
-                Debug.Log("Node " + n[0] + " reconstruct:" + n[1] + " " + n[2] + " Parent node " + n[3]);
+                //Debug.Log("Node " + n[0] + " reconstruct:" + n[1] + " " + n[2] + " Parent node " + n[3]);
                 returnXY[0] = n[1];
                 returnXY[1] = n[2];
                 if (n[4] > distance)
@@ -323,7 +323,7 @@ public class NPCManager : MonoBehaviour
         successsor[5] = Mathf.Abs(successsor[1] - targetX) + Mathf.Abs(successsor[2] - targetY); //5 is h
         successsor[6] = successsor[4] + successsor[5];//7 is f
 
-        Debug.Log("S:" + successsor[1] + " " + successsor[2]);
+        //Debug.Log("S:" + successsor[1] + " " + successsor[2]);
         foreach (int[] o in openL)
         {
             if (o[1] == successsor[1] && o[2] == successsor[2] && o[6] < successsor[6])

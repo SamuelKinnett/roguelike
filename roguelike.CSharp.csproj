@@ -55,6 +55,12 @@
     <Reference Include="UnityEngine.Networking">
       <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.Networking">
+      <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UI.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEditor">
       <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
     </Reference>
@@ -72,6 +78,8 @@
     <Compile Include="Assets\Scripts\Objects\Dungeon.cs" />
     <Compile Include="Assets\Scripts\Objects\DungeonFloor.cs" />
     <Compile Include="Assets\Scripts\Objects\GameParameters.cs" />
+    <Compile Include="Assets\Scripts\Objects\HitResultController.cs" />
+    <Compile Include="Assets\Scripts\Objects\HitResultManager.cs" />
     <Compile Include="Assets\Scripts\Objects\MapPalette.cs" />
     <Compile Include="Assets\Scripts\Objects\MapTile.cs" />
   </ItemGroup>
