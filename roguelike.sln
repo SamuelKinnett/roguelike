@@ -1,7 +1,7 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2015
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "roguelike.CSharp", "roguelike.CSharp.csproj", "{C08F713E-5E40-FA46-F8E7-6758B8D32F4F}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2008
+
+Project("{4BA19A92-E838-5FBF-8394-286D7104763C}") = "roguelike", "Assembly-CSharp.csproj", "{E8AB3635-CD18-5B3D-7842-3532E0D98CE5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -9,12 +9,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C08F713E-5E40-FA46-F8E7-6758B8D32F4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C08F713E-5E40-FA46-F8E7-6758B8D32F4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C08F713E-5E40-FA46-F8E7-6758B8D32F4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C08F713E-5E40-FA46-F8E7-6758B8D32F4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8AB3635-CD18-5B3D-7842-3532E0D98CE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8AB3635-CD18-5B3D-7842-3532E0D98CE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8AB3635-CD18-5B3D-7842-3532E0D98CE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8AB3635-CD18-5B3D-7842-3532E0D98CE5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Assembly-CSharp.csproj
 	EndGlobalSection
 EndGlobal
