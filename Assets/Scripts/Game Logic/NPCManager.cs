@@ -31,6 +31,8 @@ public class NPCManager : MonoBehaviour
     int distance = 2; //distance npc can travel
     int x;//x co-ordinate
     int y; //y co-ordinate
+    int targetX;//target x co-ordinate
+    int targetY;//target y co-ordinate
 
     bool[] adjacentEntities = new bool[4];
 
@@ -188,7 +190,7 @@ public class NPCManager : MonoBehaviour
 		distanceToPlayer = Mathf.Sqrt (Mathf.Pow ((x - playerX), 2) + Mathf.Pow ((y - playerY), 2));
 		//Debug.Log ("Distance to player: " + distanceToPlayer);
 		if ( distanceToPlayer < 7) {
-			int[] position = Movement (playerX, playerY);//returns int[] of movment position
+			int[] position = Movement ();//returns int[] of movment position
 			if (position != null) {
 				x = position [0];
 				y = position [1];
@@ -201,7 +203,12 @@ public class NPCManager : MonoBehaviour
     }
     //James' new A* pathfinding
 
-    public int[] Movement(int targetX, int targetY)
+    public void setTarget(int targetX, int targetY)
+    {
+
+    }
+
+    public int[] Movement()
     {
         //A* psudocode -> http://web.mit.edu/eranki/www/tutorials/search/
 
