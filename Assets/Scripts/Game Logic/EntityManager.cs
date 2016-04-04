@@ -23,6 +23,7 @@ public class EntityManager : MonoBehaviour
 	private FileManager fileManager;
 
 	List<NPCManager> enemies;
+	List<Sprite> sprites;
 
 	int playerX;
 	int playerY;
@@ -37,7 +38,14 @@ public class EntityManager : MonoBehaviour
 	{
 		mapManager = obj_MapManager.GetComponent<MapManager> ();
 		playerController = obj_Player.GetComponent<PlayerController> ();
-		fileManager = GameObject.Find ("FileManager");	//Find the FileManager object
+		fileManager = GameObject.Find ("FileManager").GetComponent<FileManager>();	//Find the FileManager object
+
+		sprites = new List<Sprite> ();
+
+		Sprite[] tempSpriteArray = Resources.LoadAll<Sprite> ("Graphics/");
+		Debug.Log("Sprite count: " + tempSpriteArray.Length);
+		for (int i = 0; i < tempSpriteArray.Length; ++i)
+			sprites.Add (tempSpriteArray [i]);
 	}
 
 	// Place the player at the specicified position and generate enemies
@@ -58,18 +66,29 @@ public class EntityManager : MonoBehaviour
 		enemies = new List<NPCManager> ();
 
 		//Temporary placeholder stats
-		NPCManager.stats tempStats = new NPCManager.stats ();
+
+
+		/*
 		tempStats.agility = 4;
 		tempStats.armour = 2;
 		tempStats.hp = 10;
 		tempStats.strength = 4;
 		tempStats.wisdom = 0;
-		
+		*/
+
+		NPC tempNPC;
+		Sprite tempSprite = new Sprite ();
 
 		for (int curEnemy = 0; curEnemy < numberOfEnemies; curEnemy++) {
+			tempNPC = fileManager.GetAllNPCS () [(int)(Random.value * (fileManager.GetAllNPCS ().Count - 1))];
+			foreach (Sprite curSprite in sprites) {
+				if (curSprite.name == tempNPC.name)
+					tempSprite = curSprite;
+			}
+			Debug.Log("Loading Sprite: " + tempNPC.name);
 			enemies.Add (new NPCManager ());
 			enemies [curEnemy].obj_MapManager = obj_MapManager;
-			enemies [curEnemy].CreateNPC (tempStats, testEnemySprite);
+			enemies [curEnemy].CreateNPC (tempNPC, tempSprite);
 		}
 
 	}
@@ -218,7 +237,7 @@ public class EntityManager : MonoBehaviour
 	/// </summary>
 	/// <returns><c>true</c>, if attack player was enemyed, <c>false</c> otherwise.</returns>
 	/// <param name="enemyStats">Enemy stats.</param>
-	public bool EnemyAttackPlayer (NPCManager.stats enemyStats)
+	public bool EnemyAttackPlayer (NPCStats enemyStats)
 	{
 		return (playerController.PlayerHit (enemyStats));
 	}

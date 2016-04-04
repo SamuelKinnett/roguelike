@@ -99,7 +99,7 @@ public class PlayerController : MonoBehaviour
 	/// </summary>
 	/// <param name="enemyStrength"></param>
 	/// <returns>Damage done to player,function returns -1 is attack was dodged </returns>
-	public bool PlayerHit (NPCManager.stats enemyStats)
+	public bool PlayerHit (NPCStats enemyStats)
 	{
 		int dodgeChance = Random.Range (playerStats.agility, 101);
 		HitResult hitResult = new HitResult ();
@@ -110,7 +110,7 @@ public class PlayerController : MonoBehaviour
 		} else {
 			float playerArmour = 0.2f * playerStats.armour;
 			int damageRemoved = Mathf.CeilToInt (playerArmour); //Rounds up to nearest int value
-			int damageDone = enemyStats.strength - damageRemoved;
+			int damageDone = (int)enemyStats.damage[0] - damageRemoved;
 
 			if (damageDone < 1) {
 				playerStats.hp = playerStats.hp - 1; //removes damage from the players current hp

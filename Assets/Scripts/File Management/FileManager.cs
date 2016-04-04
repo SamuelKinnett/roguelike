@@ -57,6 +57,7 @@ public class FileManager : MonoBehaviour
 		//The file manager will be used by both the main menu and the game scene.
 		// Therefore, ensure that this will not be destroyed.
 		DontDestroyOnLoad (this);
+		LoadNPCData ();
 	}
 	
 	// Update is called once per frame
@@ -67,11 +68,14 @@ public class FileManager : MonoBehaviour
 
 	void LoadNPCData ()
 	{
-		TextAsset npcFile = Resources.Load ("Data\\NPC.txt") as TextAsset;
+		TextAsset npcFile = new TextAsset ();
+		npcFile = Resources.Load ("Data/NPC") as TextAsset;
 		string[] npcStrings = npcFile.text.Split ('\n');
 
 		int numberOfNPCs = int.Parse (npcStrings [0]);
 		Debug.Log ("Loading " + numberOfNPCs + " NPCs");
+
+		npcs = new List<NPC> ();
 
 		for (int i = 1; i < numberOfNPCs + 1; ++i) {
 			NPC npc = new NPC ();
@@ -131,4 +135,7 @@ public class FileManager : MonoBehaviour
 		}
 	}
 
+	public List<NPC> GetAllNPCS() {
+		return npcs;
+	}
 }

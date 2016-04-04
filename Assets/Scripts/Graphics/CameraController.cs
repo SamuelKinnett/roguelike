@@ -143,8 +143,8 @@ public class CameraController : MonoBehaviour
 			}
 			int[] playerPosition = entityManager.GetPlayerPosition ();
 			orthoSize = defaultOrtho;
-			targetPosition.x = playerPosition [0] * playerWidth;
-			targetPosition.y = playerPosition [1] * playerHeight;
+			targetPosition.x = playerPosition [0] * playerWidth + playerWidth / 2;
+			targetPosition.y = playerPosition [1] * playerHeight + playerHeight / 2;
 		}
 
 		if (Camera.main.orthographicSize != orthoSize) {
