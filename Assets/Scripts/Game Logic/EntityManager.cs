@@ -20,6 +20,7 @@ public class EntityManager : MonoBehaviour
 	private MapManager mapManager;
 	private PlayerController playerController;
 	private HitResultManager hitResultManager;
+	private FileManager fileManager;
 
 	List<NPCManager> enemies;
 
@@ -36,6 +37,7 @@ public class EntityManager : MonoBehaviour
 	{
 		mapManager = obj_MapManager.GetComponent<MapManager> ();
 		playerController = obj_Player.GetComponent<PlayerController> ();
+		fileManager = GameObject.Find ("FileManager");	//Find the FileManager object
 	}
 
 	// Place the player at the specicified position and generate enemies

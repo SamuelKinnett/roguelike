@@ -23,6 +23,7 @@ public class CameraController : MonoBehaviour
 
 	bool showShroud;
 	float targetShroudAlpha;
+	int currentFloor;
 
 	Vector3 defaultPosition;
 	Vector3 mapPosition;
@@ -79,6 +80,8 @@ public class CameraController : MonoBehaviour
 		mapPosition = new Vector3 (0, 0, -10);
 		mapPosition.x = (mapWidth / 2) * playerWidth;
 		mapPosition.y = (mapHeight / 2) * playerHeight;
+
+		currentFloor = gameController.GetCurrentFloor ();
 	}
 	
 	// Update is called once per frame
@@ -88,18 +91,19 @@ public class CameraController : MonoBehaviour
 
 		float distanceToTarget = Mathf.Sqrt (Mathf.Pow (targetPosition.x - currentPosition.x, 2)
 		                         + Mathf.Pow (targetPosition.y - currentPosition.y, 2));
-		targetShroudAlpha = distanceToTarget;
+		targetShroudAlpha = distanceToTarget - 0.1f;
 
 		Color tempColor = shroud.color;
 
+		if (gameController.GetCurrentFloor () != currentFloor) {
+			currentFloor = gameController.GetCurrentFloor ();
+			tempColor.a = 1;
+			shroud.color = tempColor;
+		}
+
 		if (showShroud) {
 			if (shroud.color.a != targetShroudAlpha)
-			if (shroud.color.a < targetShroudAlpha) {
-				if (shroud.color.a + 0.01f < targetShroudAlpha)
-					tempColor.a += 0.01f;
-				else if (shroud.color.a + 0.01f >= targetShroudAlpha)
-					tempColor.a = targetShroudAlpha;
-			} else if (shroud.color.a > targetShroudAlpha) {
+			if (shroud.color.a > targetShroudAlpha) {
 				if (shroud.color.a - 0.01f > targetShroudAlpha)
 					tempColor.a -= 0.01f;
 				else if (shroud.color.a - 0.01f <= targetShroudAlpha)

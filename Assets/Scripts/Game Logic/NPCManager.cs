@@ -81,6 +81,36 @@ public class NPCManager : MonoBehaviour
         return false;
     }
 
+	/// <summary>
+	/// Use raycasting to determine if the NPC has a line of sight to the player
+	/// </summary>
+	/// <returns><c>true</c> if this instance can see player; otherwise, <c>false</c>.</returns>
+	bool CanSeePlayer(int playerX, int playerY) {
+		float totalDisplacement = Mathf.Abs (playerX - x) + Mathf.Abs (playerY - y);
+		float xDisplacement = (playerX - x) / totalDisplacement;
+		float yDisplacement = (playerY - y) / totalDisplacement;
+		float tempX = x;
+		float tempY = y;
+		int mapX = x;
+		int mapY = y;
+
+		Debug.Log (xDisplacement + ", " + yDisplacement);
+
+			while (!mapManager.GetTile (mapX, mapY).solid
+			    && mapManager.GetTile (mapX, mapY).active) {
+				if (mapX == playerX && mapY == playerY)
+					return true;
+
+				tempX += xDisplacement;
+				tempY += yDisplacement;
+				mapX = (int)Mathf.Round (tempX);
+				mapY = (int)Mathf.Round (tempY);
+				Debug.Log("CurSquare: " + mapX + ", " + mapY);
+			}
+
+		return false;
+	}
+
     public bool NPCHit(PlayerController.stats playerStats)
     {
         int dodgeChance = Random.Range(enemyStats.agility, 101);
@@ -187,7 +217,7 @@ public class NPCManager : MonoBehaviour
 		float distanceToPlayer = 0;
 		distanceToPlayer = Mathf.Sqrt (Mathf.Pow ((x - playerX), 2) + Mathf.Pow ((y - playerY), 2));
 		Debug.Log ("Distance to player: " + distanceToPlayer);
-		if ( distanceToPlayer < 7) {
+		if ( CanSeePlayer(playerX, playerY)) {
 			int[] position = Movement (playerX, playerY);//returns int[] of movment position
 			if (position != null) {
 				x = position [0];
