@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class NPCManager : MonoBehaviour
 {
 
+	/*
     public struct stats
     {
         public int armour; //Main normal damage protection
@@ -15,8 +16,9 @@ public class NPCManager : MonoBehaviour
         public int level; //Main player level, doesn't do a whole lot except allow for item and weapon equipping
         public string playerType; //Not Used for NPC
     }
+    */
 
-    stats enemyStats = new stats();
+	NPC npc;
     public GameObject obj_MapManager;
 
     public SpriteRenderer spriteRenderer;
@@ -43,7 +45,7 @@ public class NPCManager : MonoBehaviour
         visualRadius = 5;
     }
 
-    public void CreateNPC(stats NPCStats, Sprite sprite)
+    public void CreateNPC(NPC newNPC, Sprite sprite)
     {
         worldNPC = new GameObject();
         spriteRenderer = worldNPC.AddComponent<SpriteRenderer>();
@@ -53,7 +55,7 @@ public class NPCManager : MonoBehaviour
         randomPosition = mapManager.GetRandomPosition();
         x = randomPosition[0];
         y = randomPosition[1];
-        enemyStats = NPCStats;
+		npc = newNPC;
         spriteRenderer.sprite = sprite;
         UpdateWorldPosition();
     }
@@ -81,9 +83,39 @@ public class NPCManager : MonoBehaviour
         return false;
     }
 
+	/// <summary>
+	/// Use raycasting to determine if the NPC has a line of sight to the player
+	/// </summary>
+	/// <returns><c>true</c> if this instance can see player; otherwise, <c>false</c>.</returns>
+	bool CanSeePlayer(int playerX, int playerY) {
+		float totalDisplacement = Mathf.Abs (playerX - x) + Mathf.Abs (playerY - y);
+		float xDisplacement = (playerX - x) / totalDisplacement;
+		float yDisplacement = (playerY - y) / totalDisplacement;
+		float tempX = x;
+		float tempY = y;
+		int mapX = x;
+		int mapY = y;
+
+		Debug.Log (xDisplacement + ", " + yDisplacement);
+
+			while (!mapManager.GetTile (mapX, mapY).solid
+			    && mapManager.GetTile (mapX, mapY).active) {
+				if (mapX == playerX && mapY == playerY)
+					return true;
+
+				tempX += xDisplacement;
+				tempY += yDisplacement;
+				mapX = (int)Mathf.Round (tempX);
+				mapY = (int)Mathf.Round (tempY);
+				Debug.Log("CurSquare: " + mapX + ", " + mapY);
+			}
+
+		return false;
+	}
+
     public bool NPCHit(PlayerController.stats playerStats)
     {
-        int dodgeChance = Random.Range(enemyStats.agility, 101);
+		int dodgeChance = (int)Random.Range(npc.stats.agility, 101);
 
         if (dodgeChance == 100)
         {
@@ -92,15 +124,15 @@ public class NPCManager : MonoBehaviour
         }
         else
         {
-            float enemyArmour = 0.2f * enemyStats.armour;
+			float enemyArmour = 0.2f * npc.stats.defence[0];
             int damageRemoved = Mathf.CeilToInt(enemyArmour); //Rounds up to nearest int value
             int damageDone = playerStats.strength - damageRemoved;
 
             if (damageDone < 1)
             {
-                enemyStats.hp = enemyStats.hp - 1; //removes damage from the players current hp
+                npc.stats.hp = npc.stats.hp - 1; //removes damage from the players current hp
                 Debug.Log("Player dealt 1 damage to enemy!");
-                if (enemyStats.hp < 1)
+                if (npc.stats.hp < 1)
                 {
                     Debug.Log("Enemy is dead!");
 					DestroyNPC ();
@@ -113,9 +145,9 @@ public class NPCManager : MonoBehaviour
             }
             else
             {
-                enemyStats.hp = enemyStats.hp - damageDone;
+                npc.stats.hp = npc.stats.hp - damageDone;
                 Debug.Log("Player dealt " + damageDone + " to enemy!");
-                if (enemyStats.hp < 1)
+                if (npc.stats.hp < 1)
                 {
                     Debug.Log("Enemy is dead!");
 					DestroyNPC ();
@@ -129,9 +161,9 @@ public class NPCManager : MonoBehaviour
         }
     }
 
-    public stats GetAllEnemyStats()
+    public NPCStats GetAllEnemyStats()
     {
-        return enemyStats;
+        return npc.stats;
     }
 
     public int[] GetPosition()
@@ -187,7 +219,7 @@ public class NPCManager : MonoBehaviour
 		float distanceToPlayer = 0;
 		distanceToPlayer = Mathf.Sqrt (Mathf.Pow ((x - playerX), 2) + Mathf.Pow ((y - playerY), 2));
 		Debug.Log ("Distance to player: " + distanceToPlayer);
-		if ( distanceToPlayer < 7) {
+		if ( CanSeePlayer(playerX, playerY)) {
 			int[] position = Movement (playerX, playerY);//returns int[] of movment position
 			if (position != null) {
 				x = position [0];

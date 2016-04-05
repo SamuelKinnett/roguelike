@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class CameraController : MonoBehaviour
@@ -8,6 +9,7 @@ public class CameraController : MonoBehaviour
 	public GameObject obj_EntityManager;
 	public GameObject obj_GameController;
 	public GameObject obj_MapManager;
+	public GameObject obj_Shroud;
 
 	public float scrollSpeed;
 	public float zoomSpeed;
@@ -17,6 +19,11 @@ public class CameraController : MonoBehaviour
 	private MapManager mapManager;
 	private EntityManager entityManager;
 	private Rigidbody2D rigidBody;
+	private Image shroud;
+
+	bool showShroud;
+	float targetShroudAlpha;
+	int currentFloor;
 
 	Vector3 defaultPosition;
 	Vector3 mapPosition;
@@ -51,6 +58,7 @@ public class CameraController : MonoBehaviour
 		mapManager = obj_MapManager.GetComponent<MapManager> ();
 		entityManager = obj_EntityManager.GetComponent<EntityManager> ();
 		rigidBody = this.GetComponent<Rigidbody2D> ();
+		shroud = obj_Shroud.GetComponent<Image> ();
 
 		playerWidth = player.GetComponent<SpriteRenderer> ().bounds.size.x;
 		playerHeight = player.GetComponent<SpriteRenderer> ().bounds.size.y;
@@ -72,6 +80,8 @@ public class CameraController : MonoBehaviour
 		mapPosition = new Vector3 (0, 0, -10);
 		mapPosition.x = (mapWidth / 2) * playerWidth;
 		mapPosition.y = (mapHeight / 2) * playerHeight;
+
+		currentFloor = gameController.GetCurrentFloor ();
 	}
 	
 	// Update is called once per frame
@@ -79,14 +89,44 @@ public class CameraController : MonoBehaviour
 	{
 		currentPosition = this.transform.position;
 
+		float distanceToTarget = Mathf.Sqrt (Mathf.Pow (targetPosition.x - currentPosition.x, 2)
+		                         + Mathf.Pow (targetPosition.y - currentPosition.y, 2));
+		targetShroudAlpha = distanceToTarget - 0.1f;
+
+		Color tempColor = shroud.color;
+
+		if (gameController.GetCurrentFloor () != currentFloor) {
+			currentFloor = gameController.GetCurrentFloor ();
+			tempColor.a = 1;
+			shroud.color = tempColor;
+		}
+
+		if (showShroud) {
+			if (shroud.color.a != targetShroudAlpha)
+			if (shroud.color.a > targetShroudAlpha) {
+				if (shroud.color.a - 0.01f > targetShroudAlpha)
+					tempColor.a -= 0.01f;
+				else if (shroud.color.a - 0.01f <= targetShroudAlpha)
+					tempColor.a = targetShroudAlpha;
+			}
+		} else {
+			if (shroud.color.a - 0.01f > 0)
+				tempColor.a -= 0.01f;
+			else
+				tempColor.a = 0;
+		}
+		shroud.color = tempColor;
+
 		if (Input.GetKey (KeyCode.M)) {
 			//Zoom out to view the whole map
 			// pause input during this time.
 			gameController.Pause ();
+			showShroud = false;
 			targetPosition = mapPosition;
 			orthoSize = mapOrtho;
 		} else {
 			//Move to the player's position
+			showShroud = true;
 			gameController.Resume ();
 			if (Input.GetKeyDown (KeyCode.Period)) {
 				//Decreases the default zoom level, thereby zooming in
@@ -103,8 +143,8 @@ public class CameraController : MonoBehaviour
 			}
 			int[] playerPosition = entityManager.GetPlayerPosition ();
 			orthoSize = defaultOrtho;
-			targetPosition.x = playerPosition [0] * playerWidth;
-			targetPosition.y = playerPosition [1] * playerHeight;
+			targetPosition.x = playerPosition [0] * playerWidth + playerWidth / 2;
+			targetPosition.y = playerPosition [1] * playerHeight + playerHeight / 2;
 		}
 
 		if (Camera.main.orthographicSize != orthoSize) {
@@ -139,7 +179,8 @@ public class CameraController : MonoBehaviour
 
 	}
 
-	public void AddHitEffect( float seconds) {
+	public void AddHitEffect (float seconds)
+	{
 		hitTimer = seconds;
 	}
 }

@@ -29,6 +29,8 @@ public class PlayerController : MonoBehaviour
 
 	private float worldWidth, worldHeight;
 	private HitResultManager hitResultManager;
+	private Animator animator;
+	float animationCooldown;
 	Random rnd = new Random ();
 
 	int x, y;
@@ -37,6 +39,7 @@ public class PlayerController : MonoBehaviour
 	void Start ()
 	{
 		spriteRenderer = this.GetComponent<SpriteRenderer> ();
+		animator = this.GetComponent<Animator> ();
 		hitResultManager = obj_HitResultManager.GetComponent<HitResultManager> ();
 		worldWidth = spriteRenderer.bounds.size.x;
 		worldHeight = spriteRenderer.bounds.size.y;
@@ -53,7 +56,11 @@ public class PlayerController : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
-
+		if (animationCooldown < 0) {
+			animationCooldown -= Time.deltaTime;
+		} else {
+			animator.SetBool ("moving", false);
+		}
 	}
 
 	/// <summary>
@@ -69,6 +76,8 @@ public class PlayerController : MonoBehaviour
 		this.transform.position = tempTrans;
 		this.x = x;
 		this.y = y;
+		animationCooldown = 0.1f;
+		animator.SetBool ("moving", true);
 	}
 
 	/// <summary>
@@ -90,7 +99,7 @@ public class PlayerController : MonoBehaviour
 	/// </summary>
 	/// <param name="enemyStrength"></param>
 	/// <returns>Damage done to player,function returns -1 is attack was dodged </returns>
-	public bool PlayerHit (NPCManager.stats enemyStats)
+	public bool PlayerHit (NPCStats enemyStats)
 	{
 		int dodgeChance = Random.Range (playerStats.agility, 101);
 		HitResult hitResult = new HitResult ();
@@ -101,7 +110,7 @@ public class PlayerController : MonoBehaviour
 		} else {
 			float playerArmour = 0.2f * playerStats.armour;
 			int damageRemoved = Mathf.CeilToInt (playerArmour); //Rounds up to nearest int value
-			int damageDone = enemyStats.strength - damageRemoved;
+			int damageDone = (int)enemyStats.damage[0] - damageRemoved;
 
 			if (damageDone < 1) {
 				playerStats.hp = playerStats.hp - 1; //removes damage from the players current hp
