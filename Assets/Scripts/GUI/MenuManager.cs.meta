@@ -1,10 +1,13 @@
 fileFormatVersion: 2
 guid: ca90b043abbd00f40a878a3703b65e8f
-timeCreated: 1455646967
+timeCreated: 1460484720
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - mainMenuPanel: {instanceID: 0}
+  - canvas: {instanceID: 0}
+  - myFont: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
