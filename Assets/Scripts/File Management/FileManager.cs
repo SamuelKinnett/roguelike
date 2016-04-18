@@ -51,6 +51,11 @@ public class FileManager : MonoBehaviour
 
 	List<NPC> npcs;
 
+	List<string> dungeonPrefix;
+	List<string> dungeonFirstName;
+	List<string> dungeonSecondName;
+	List<string> dungeonSuffix;
+
 	// Use this for initialization
 	void Start ()
 	{
@@ -58,6 +63,13 @@ public class FileManager : MonoBehaviour
 		// Therefore, ensure that this will not be destroyed.
 		DontDestroyOnLoad (this);
 		LoadNPCData ();
+
+		dungeonPrefix = new List<string> ();
+		dungeonFirstName = new List<string> ();
+		dungeonSecondName = new List<string> ();
+		dungeonSuffix = new List<string> ();
+
+		LoadDungeonNameData ();
 	}
 	
 	// Update is called once per frame
@@ -138,4 +150,59 @@ public class FileManager : MonoBehaviour
 	public List<NPC> GetAllNPCS() {
 		return npcs;
 	}
+
+	void LoadDungeonNameData() {
+		TextAsset dungeonPreData = new TextAsset ();
+		TextAsset dungeonFirstData = new TextAsset ();
+		TextAsset dungeonSecondData = new TextAsset ();
+		TextAsset dungeonSufData = new TextAsset ();
+
+		dungeonPreData = Resources.Load ("Data/DungeonPrefix") as TextAsset;
+		dungeonFirstData = Resources.Load ("Data/DungeonFirst") as TextAsset;
+		dungeonSecondData = Resources.Load ("Data/DungeonSecond") as TextAsset;
+		dungeonSufData = Resources.Load ("Data/DungeonSuffix") as TextAsset;
+
+		string[] tempDungeonPre = dungeonPreData.text.Split ('\n');
+		string[] tempDungeonFirst = dungeonFirstData.text.Split ('\n');
+		string[] tempDungeonSecond = dungeonSecondData.text.Split ('\n');
+		string[] tempDungeonSuf = dungeonSufData.text.Split ('\n');
+
+		for (int temp = 0; temp < tempDungeonPre.Length; ++temp) {
+			dungeonPrefix.Add (tempDungeonPre [temp]);
+		}
+
+		for (int temp = 0; temp < tempDungeonFirst.Length; ++temp) {
+			dungeonFirstName.Add (tempDungeonFirst [temp]);
+		}
+
+		for (int temp = 0; temp < tempDungeonSecond.Length; ++temp) {
+			dungeonSecondName.Add (tempDungeonSecond [temp]);
+		}
+
+		for (int temp = 0; temp < tempDungeonSuf.Length; ++temp) {
+			dungeonSuffix.Add (tempDungeonSuf [temp]);
+		}
+
+		Debug.Log (dungeonPrefix.Count);
+		Debug.Log (dungeonFirstName.Count);
+		Debug.Log (dungeonSecondName.Count);
+		Debug.Log (dungeonSuffix.Count);
+	}
+
+	public string GetDungeonPrefix() {
+		return dungeonPrefix [(int)Mathf.Round((dungeonPrefix.Count - 1) * Random.value)];
+	}
+
+	public string GetDungeonFirstName() {
+		return dungeonFirstName [(int)Mathf.Round((dungeonFirstName.Count - 1) * Random.value)];
+	}
+
+	public string GetDungeonSecondName() {
+		return dungeonSecondName [(int)Mathf.Round((dungeonSecondName.Count - 1) * Random.value)];
+	}
+
+	public string GetDungeonSuffix() {
+		return dungeonSuffix [(int)Mathf.Round((dungeonSuffix.Count - 1) * Random.value)];
+	}
+
 }

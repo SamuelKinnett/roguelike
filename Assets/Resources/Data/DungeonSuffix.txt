@@ -1,0 +1,10 @@
+laughter
+sorrow
+mourning
+screaming
+warriors
+rest
+anger
+calm
+serenity
+fury

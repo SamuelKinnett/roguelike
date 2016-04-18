@@ -1,0 +1,11 @@
+cave
+castle
+fortress
+basillica
+keep
+citadel
+dungeon
+crypt
+caverns
+catacombs
+tomb
