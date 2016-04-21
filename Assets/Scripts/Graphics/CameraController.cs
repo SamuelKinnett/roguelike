@@ -10,6 +10,7 @@ public class CameraController : MonoBehaviour
 	public GameObject obj_GameController;
 	public GameObject obj_MapManager;
 	public GameObject obj_Shroud;
+    public GameObject obj_MenuManager;
 
 	public float scrollSpeed;
 	public float zoomSpeed;
@@ -20,6 +21,7 @@ public class CameraController : MonoBehaviour
 	private EntityManager entityManager;
 	private Rigidbody2D rigidBody;
 	private Image shroud;
+    private MenuManager menuManager;
 
 	bool showShroud;
 	float targetShroudAlpha;
@@ -53,14 +55,18 @@ public class CameraController : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
-		playerController = player.GetComponent<PlayerController> ();
+        playerController = player.GetComponent<PlayerController> ();
 		gameController = obj_GameController.GetComponent<GameController> ();
 		mapManager = obj_MapManager.GetComponent<MapManager> ();
 		entityManager = obj_EntityManager.GetComponent<EntityManager> ();
 		rigidBody = this.GetComponent<Rigidbody2D> ();
 		shroud = obj_Shroud.GetComponent<Image> ();
 
-		playerWidth = player.GetComponent<SpriteRenderer> ().bounds.size.x;
+
+        menuManager = obj_MenuManager.GetComponent<MenuManager>();
+
+
+        playerWidth = player.GetComponent<SpriteRenderer> ().bounds.size.x;
 		playerHeight = player.GetComponent<SpriteRenderer> ().bounds.size.y;
 
 		defaultPosition = new Vector3 (0, 0, -10);
@@ -116,7 +122,11 @@ public class CameraController : MonoBehaviour
 				tempColor.a = 0;
 		}
 		shroud.color = tempColor;
-
+        
+        if (Input.GetKey(KeyCode.Escape))
+        {           
+            menuManager.pauseMenu();
+        }
 		if (Input.GetKey (KeyCode.M)) {
 			//Zoom out to view the whole map
 			// pause input during this time.
