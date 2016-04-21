@@ -40,6 +40,7 @@ public class EntityManager : MonoBehaviour
 		playerController = obj_Player.GetComponent<PlayerController> ();
 		fileManager = GameObject.Find ("FileManager").GetComponent<FileManager>();	//Find the FileManager object
 
+
 		sprites = new List<Sprite> ();
 
 		Sprite[] tempSpriteArray = Resources.LoadAll<Sprite> ("Graphics/");

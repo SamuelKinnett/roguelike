@@ -5,25 +5,13 @@ using System.Collections.Generic;
 public class NPCManager : MonoBehaviour
 {
 
-	/*
-    public struct stats
-    {
-        public int armour; //Main normal damage protection
-        public int strength; // Main normal damage addition
-        public int wisdom; //Magic armour + Magic strength (May be split later)
-        public int agility; //Dodge chance (May become ranger stat later)
-        public int hp; //Main health for player
-        public int level; //Main player level, doesn't do a whole lot except allow for item and weapon equipping
-        public string playerType; //Not Used for NPC
-    }
-    */
-
 	NPC npc;
     public GameObject obj_MapManager;
 
     public SpriteRenderer spriteRenderer;
     private float worldWidth, worldHeight;
     private MapManager mapManager;
+    private PlayerController playerController;
     private GameObject worldNPC;
     //The game object representing the NPC in worldspace
 
@@ -50,6 +38,7 @@ public class NPCManager : MonoBehaviour
         worldNPC = new GameObject();
         spriteRenderer = worldNPC.AddComponent<SpriteRenderer>();
         mapManager = obj_MapManager.GetComponent<MapManager>();
+        playerController = new PlayerController();
 
         int[] randomPosition = new int[2];
         randomPosition = mapManager.GetRandomPosition();
@@ -113,7 +102,7 @@ public class NPCManager : MonoBehaviour
 		return false;
 	}
 
-    public bool NPCHit(PlayerController.stats playerStats)
+    public bool oldNPCHit(PlayerController.stats playerStats)
     {
 		int dodgeChance = (int)Random.Range(npc.stats.agility, 101);
 
@@ -390,5 +379,39 @@ public class NPCManager : MonoBehaviour
     public void UpdateAdjacentEntities(bool[] adjacentEntities)
     {
         this.adjacentEntities = adjacentEntities;
+    }
+
+    public bool NPCHit(PlayerController.stats playerStats)
+    {
+        int hitChance = Random.Range((int)Mathf.CeilToInt(0.1f + playerController.GetEquippedItems() / npc.stats.agility), 101);
+        int statModifier = 3; //Placeholder
+        if (hitChance == 100)
+        {
+            Debug.Log("Enemy dodged attack!");
+        }
+        else
+        {
+            int initialDamage = (int)Mathf.CeilToInt(playerController.GetEquippedItems()) + (int)Mathf.CeilToInt(playerController.GetEquippedItems()) * statModifier;
+            int damageDone = initialDamage * ((100 - (int)Mathf.CeilToInt(npc.stats.defence[0])) / 100) + 1;
+            Debug.Log("Enemy took " + damageDone + " damage!");
+            npc.stats.hp -= damageDone;
+            if (npc.stats.hp < 1)
+            {
+                Debug.Log("Enemy is dead!");
+                DestroyNPC();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+
+
+
+
+        return true;
     }
 }
